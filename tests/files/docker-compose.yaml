@@ -1,0 +1,6 @@
+version: "3.9"
+   
+services:
+  app:
+    build: .
+    image: "yourimage:2.5.6"
