@@ -2,6 +2,7 @@ import pytomlpp
 import pytest
 
 from textwrap import dedent
+from pathlib import Path
 
 
 config_toml = dedent(
@@ -31,3 +32,8 @@ config_toml = dedent(
 @pytest.fixture
 def config():
     return pytomlpp.loads(config_toml)
+
+
+@pytest.fixture(scope="session")
+def files_path():
+    return Path("tests") / "files"
