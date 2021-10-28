@@ -1,11 +1,19 @@
 from __future__ import annotations
-import re
 
+import re
 from pathlib import Path
 
+from semver import VersionInfo
 
-def test_config_load(config: dict):
-    files = config["files"]
+from bump_semver_anywhere import App
+from bump_semver_anywhere.app import FileVersion
+
+
+def test_config_load(patched_app):
+    app: App = patched_app()
+
+    config = app.config
+    files = config.files
 
     assert files
 
@@ -20,28 +28,41 @@ def test_config_load(config: dict):
         assert spec["pattern"]
 
 
-def test_filename_find(config: dict, files_path: Path):
-    files: dict[str, dict[str, str]] = config["files"]
+def test_files_versions(patched_app):
+    app: App = patched_app()
 
-    versions = {
-        "docker": "4.2.4",
-        "python-module": "1.0.1",
-        "python-pyproject": "0.1.0",
-        "javascript": "1.0.0",
-    }
+    exp_files_versions = [
+        FileVersion(
+            file=Path("tests/files/docker-compose.yaml"),
+            version=VersionInfo.parse("4.2.4"),
+            lineno=5,
+            start_pos=22,
+            end_pos=27,
+        ),
+        FileVersion(
+            file=Path("tests/files/package.json"),
+            version=VersionInfo.parse("1.0.0"),
+            lineno=2,
+            start_pos=16,
+            end_pos=21,
+        ),
+        FileVersion(
+            file=Path("tests/files/__init__.py"),
+            version=VersionInfo.parse("1.0.1"),
+            lineno=0,
+            start_pos=15,
+            end_pos=20,
+        ),
+        FileVersion(
+            file=Path("tests/files/pyproject.toml"),
+            version=VersionInfo.parse("0.1.0"),
+            lineno=2,
+            start_pos=11,
+            end_pos=16,
+        ),
+    ]
 
-    for file, spec in files.items():
-        filename = spec["filename"]
-        patternr = spec["pattern"]
+    files_versions = app.files_versions
 
-        f = files_path / filename
-
-        assert f.is_file()
-
-        pattern = re.compile(patternr)
-
-        with f.open() as fp:
-            for line in fp:
-                if match := pattern.search(line):
-                    version = match.group(1)
-                    assert versions[file] == version
+    for file_version in files_versions:
+        assert file_version in exp_files_versions

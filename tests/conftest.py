@@ -1,9 +1,10 @@
-import pytomlpp
-import pytest
-
-from textwrap import dedent
 from pathlib import Path
+from textwrap import dedent
+from unittest.mock import patch
 
+import pytest
+import pytomlpp
+from pytest_mock import MockerFixture
 
 config_toml = dedent(
     """
@@ -16,7 +17,7 @@ config_toml = dedent(
 
     [files.python-module]
     filename = "__init__.py"
-    pattern = "__version__ ?= ?'(.*?)'"
+    pattern = '__version__ ?= ?"(.*?)"'
 
     [files.python-pyproject]
     filename = "pyproject.toml"
@@ -30,10 +31,20 @@ config_toml = dedent(
 
 
 @pytest.fixture
-def config():
+def test_config():
     return pytomlpp.loads(config_toml)
 
 
 @pytest.fixture(scope="session")
-def files_path():
+def test_files_path():
     return Path("tests") / "files"
+
+
+@pytest.fixture
+def patched_app(mocker: MockerFixture, test_config, test_files_path):
+    from bump_semver_anywhere import App
+
+    mocker.patch.object(App, "_load_config_file", return_value=test_config)
+    mocker.patch.object(App, "_get_path", return_value=test_files_path)
+
+    return App
