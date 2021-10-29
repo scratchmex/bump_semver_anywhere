@@ -125,6 +125,7 @@ class App:
                 pattern=spec["pattern"],
             )
 
+        # TODO: specify the path on config
         path = cls._get_path()
 
         return AppConfig(config_dict=configd, files=files, path=path)
