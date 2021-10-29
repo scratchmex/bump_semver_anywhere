@@ -128,6 +128,9 @@ class App:
         # TODO: specify the path on config
         path = cls._get_path()
 
+        # TODO: add ability to normalize version by having a `current_version` field on the config
+        #       panic if the versions do not coincide
+
         return AppConfig(config_dict=configd, files=files, path=path)
 
     @staticmethod
