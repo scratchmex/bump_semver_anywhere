@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass
+from fileinput import FileInput
 from pathlib import Path
 from typing import TypedDict
 
@@ -31,6 +32,22 @@ class AppConfig:
     config_dict: dict
     files: dict[str, FileConfig]
     path: Path
+
+
+def save_fileversion(filever: FileVersion):
+    """Saves to disk the FileVersion"""
+
+    if not filever.file.is_file():
+        raise RuntimeError(f"file={filever.file} is not an actual file")
+
+    start, end = filever.start_pos, filever.end_pos
+
+    with FileInput(files=(filever.file), inplace=True) as f:
+        for lineno, line in enumerate(f):
+            if lineno == filever.lineno:
+                line = line[:start] + str(filever.version) + line[end:]
+
+            print(line, end="")
 
 
 class App:
@@ -124,8 +141,16 @@ class App:
         with open(filename) as f:
             return pytomlpp.load(f)
 
-    # def auto_bump():
-    #     """Automatically bump the version"""
+    def bump(self, part: str, **kwargs):
+        for filever in self.files_versions:
+            filever.version = filever.version.next_version(part, **kwargs)
 
-    # def save_files():
-    #     """Save the files version"""
+    def auto_bump(self):
+        """Automatically bump the version"""
+        # TODO: add strategy for which version to bump
+        self.bump("minor")
+
+    def save_files(self):
+        """Save the files version"""
+        for filever in self.files_versions:
+            save_fileversion(filever)

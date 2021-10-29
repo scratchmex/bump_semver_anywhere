@@ -35,9 +35,15 @@ def test_config():
     return pytomlpp.loads(config_toml)
 
 
-@pytest.fixture(scope="session")
-def test_files_path():
-    return Path("tests") / "files"
+@pytest.fixture
+def test_files_path(tmp_path):
+    from shutil import copytree
+
+    p = tmp_path / "files"
+
+    copytree(Path("tests/files"), p)
+
+    return p
 
 
 @pytest.fixture
