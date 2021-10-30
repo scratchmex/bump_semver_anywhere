@@ -24,6 +24,11 @@ def test_config_load(patched_app):
         assert spec["filename"]
         assert spec["pattern"]
 
+    vcs = config.vcs
+
+    assert vcs["commit"] == True
+    assert vcs["commit_msg"] == "release: bump {current_version} -> {new_version}"
+
 
 def test_files_versions(patched_app):
     app: App = patched_app()

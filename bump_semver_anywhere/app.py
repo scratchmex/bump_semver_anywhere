@@ -4,7 +4,7 @@ import re
 from dataclasses import dataclass
 from fileinput import FileInput
 from pathlib import Path
-from typing import TypedDict
+from typing import Any, TypedDict
 
 import pytomlpp
 from attr.setters import frozen
@@ -27,10 +27,16 @@ class FileConfig(TypedDict):
     pattern: str
 
 
+class VCSConfig(TypedDict):
+    commit: bool
+    commit_msg: str
+
+
 @dataclass
 class AppConfig:
     config_dict: dict
     files: dict[str, FileConfig]
+    vcs: VCSConfig | None
     path: Path
 
 
@@ -134,7 +140,23 @@ class App:
         # TODO: add ability to normalize version by having a `current_version` field on the config
         #       panic if the versions do not coincide
 
-        return AppConfig(config_dict=configd, files=files, path=path)
+        vcs = None
+        # TODO: decide if we should fail if vcs not specified in config
+        if "vcs" in configd:
+            vcsd = configd["vcs"]
+            if "commit" in vcsd and "commit_msg" in vcsd:
+                commit_flag = bool(vcsd["commit"])
+                if not commit_flag:
+                    raise RuntimeError(
+                        "If you do not want to commit, skip the config section. It is the default behaivour"
+                    )
+                vcs = VCSConfig(commit=commit_flag, commit_msg=vcsd["commit_msg"])
+            elif "commit" in vcsd and "commit_msg" not in vcsd:
+                raise RuntimeError(
+                    f"If `commit` flag is passed, we expect to have a `commit_msg` also"
+                )
+
+        return AppConfig(config_dict=configd, files=files, path=path, vcs=vcs)
 
     @staticmethod
     def _get_path() -> Path:
@@ -143,7 +165,7 @@ class App:
     @staticmethod
     def _load_config_file(
         filename: str,
-    ) -> dict[str, dict[str, dict[str, str]]]:
+    ) -> dict[str, Any]:
         """Loads the config from a file"""
         with open(filename) as f:
             return pytomlpp.load(f)

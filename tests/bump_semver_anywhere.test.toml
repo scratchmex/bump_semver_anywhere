@@ -1,4 +1,9 @@
 # bump_semver_anywhere.toml
+
+[vcs]
+commit = true
+commit_msg = "release: bump {current_version} -> {new_version}"
+
 [files]
 
 [files.docker]
