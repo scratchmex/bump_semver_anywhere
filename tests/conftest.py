@@ -25,11 +25,14 @@ def test_files_path(tmp_path):
 def patch_vcs(mocker: MockerFixture):
     from bump_semver_anywhere.app import BaseVCS
 
-    mocker.patch.object(BaseVCS, "_run_cmd", return_value=None)
+    class FakeProcess:
+        stdout = ""
+
+    mocker.patch.object(BaseVCS, "_run_cmd", return_value=FakeProcess)
 
 
 @pytest.fixture
-def patch_app(mocker: MockerFixture, test_files_path):
+def patch_app(mocker: MockerFixture, patch_vcs, test_files_path):
     from bump_semver_anywhere import App
 
     mocker.patch.object(App, "_get_path", return_value=test_files_path)

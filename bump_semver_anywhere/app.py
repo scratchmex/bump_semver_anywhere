@@ -65,9 +65,9 @@ class BaseVCS:
         self.files = files
         self.cwd = cwd
 
-    def _run_cmd(self, cmd: list[str]):
+    def _run_cmd(self, cmd: list[str], **kwargs):
         """Base function to call any shell command"""
-        subprocess.run(cmd, check=True, cwd=self.cwd)
+        return subprocess.run(cmd, check=True, cwd=self.cwd, **kwargs)
 
     def format_commit_msg(self, part: str, curr_version: str, new_version: str):
         """Formats the `commit_msg` template in-place"""
@@ -96,6 +96,15 @@ class BaseVCS:
         """
         raise NotImplementedError
 
+    def _is_dirty(self) -> bool:
+        raise NotImplementedError
+
+    def check_dirty(self):
+        if self._is_dirty():
+            raise RuntimeError(
+                "The current directory is dirty. Watch out for unstaged files."
+            )
+
     def stage(self):
         """Stages the files"""
         for file in self.files:
@@ -122,6 +131,15 @@ class Git(BaseVCS):
     def _get_stage_cmd(self) -> list[str]:
         return ["git", "add"]
 
+    def _is_dirty(self) -> bool:
+        cmd = ["git", "status", "--short"]
+        p = self._run_cmd(cmd, capture_output=True)
+
+        if p.stdout:
+            return True
+
+        return False
+
 
 class App:
     """The main class
@@ -145,11 +163,16 @@ class App:
         # TODO: ability to choose the vcs
         VCSClass = Git
 
-        return VCSClass(
+        vcs = VCSClass(
             commit_msg=self.config.vcs["commit_msg"],
             files=[file["filename"] for file in self.config.files.values()],
             cwd=self.config.path,
         )
+
+        # check if not dirty before anything
+        vcs.check_dirty()
+
+        return vcs
 
     def _init_file_version(self, file: str, config: FileConfig) -> FileVersion:
         """Initializes a FileVersion class from a FileConfig"""
