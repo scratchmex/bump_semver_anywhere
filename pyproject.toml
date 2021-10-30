@@ -16,6 +16,7 @@ black = {version = "^21.9b0", allow-prereleases = true}
 pre-commit = "^2.15.0"
 isort = "^5.9.3"
 pytest-mock = "^3.6.1"
+flake8 = "^4.0.1"
 
 [tool.poetry.scripts]
 "bump_semver_anywhere" = "bump_semver_anywhere.cli:main"

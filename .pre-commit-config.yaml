@@ -7,3 +7,7 @@ repos:
     rev: 5.9.3
     hooks:
       - id: isort
+  - repo: https://gitlab.com/pycqa/flake8.git
+    rev: 4.0.1
+    hooks:
+      - id: flake8
