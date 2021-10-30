@@ -51,11 +51,14 @@ def save_fileversion(filever: FileVersion):
 
 
 class App:
-    """The main class"""
+    """The main class
 
-    def __init__(self):
+    config_filename: 'bump_semver_anywhere.toml'
+    """
+
+    def __init__(self, config_filename: str = "bump_semver_anywhere.toml"):
         # load_config -> verify config in place
-        self.config = self.load_config()
+        self.config = self.load_config(config_filename)
         # make FileVersions
         self.files_versions = self._init_files_versions()
 
@@ -105,9 +108,9 @@ class App:
         return files_versions
 
     @classmethod
-    def load_config(cls) -> AppConfig:
+    def load_config(cls, filename: str) -> AppConfig:
         """Load app config"""
-        configd = cls._load_config_file()
+        configd = cls._load_config_file(filename)
 
         if not "files" in configd:
             raise RuntimeError("Must specify a '[files]'")
@@ -139,9 +142,9 @@ class App:
 
     @staticmethod
     def _load_config_file(
-        filename="bump_semver_anywhere.toml",
+        filename: str,
     ) -> dict[str, dict[str, dict[str, str]]]:
-        """Loads the config from a file. The default name is 'bump_semver_anywhere.toml'"""
+        """Loads the config from a file"""
         with open(filename) as f:
             return pytomlpp.load(f)
 

@@ -1,0 +1,10 @@
+# bump_semver_anywhere.toml
+[files]
+
+[files.python-module]
+filename = "bump_semver_anywhere/__init__.py"
+pattern = '__version__ ?= ?"(.*?)"'
+
+[files.python-pyproject]
+filename = "pyproject.toml"
+pattern = 'version ?= ?"(.*?)"'

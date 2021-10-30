@@ -8,6 +8,7 @@ authors = ["Ivan Gonzalez <scratchmex@gmail.com>"]
 python = "^3.8"
 pytomlpp = "^1.0.3"
 semver = "^2.13.0"
+click = "^8.0.3"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"
@@ -16,9 +17,15 @@ pre-commit = "^2.15.0"
 isort = "^5.9.3"
 pytest-mock = "^3.6.1"
 
+[tool.poetry.scripts]
+"bump_semver_anywhere" = "bump_semver_anywhere.cli:main"
+
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.plugins.console_scripts]
+"bump_semver_anywhere" = "bump_semver_anywhere.cli:main"
 
 [tool.isort]
 profile = "black"

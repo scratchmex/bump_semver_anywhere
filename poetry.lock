@@ -71,7 +71,7 @@ python-versions = ">=3.6.1"
 name = "click"
 version = "8.0.3"
 description = "Composable command line interface toolkit"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.6"
 
@@ -82,7 +82,7 @@ colorama = {version = "*", markers = "platform_system == \"Windows\""}
 name = "colorama"
 version = "0.4.4"
 description = "Cross-platform colored terminal text."
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
 
@@ -362,7 +362,7 @@ python-versions = "*"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "f477632279b76346d559c4fc73e81749b63af03a35ebd4b1b873a44aa04c5072"
+content-hash = "e083698ee0144030fa936228770e506f972356a76911dae154aa22a5bbc1afd0"
 
 [metadata.files]
 atomicwrites = [
