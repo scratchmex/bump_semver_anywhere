@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "bump_semver_anywhere"
 version = "0.1.0"
-description = ""
+description = "Bump your semantic version of any software using regex"
 authors = ["Ivan Gonzalez <scratchmex@gmail.com>"]
 
 [tool.poetry.dependencies]
