@@ -8,19 +8,27 @@ from .app import App
 @click.command()
 @click.option(
     "--config",
-    default="bump_semver_everywhere.toml",
+    "-c",
+    default="bump_semver_anywhere.toml",
     show_default=True,
     type=click.Path(exists=True, dir_okay=False),
     help="the config file",
 )
 @click.option(
     "--part",
+    "-p",
     default="patch",
     type=click.Choice(("major", "minor", "patch", "prerelease")),
     show_default=True,
     help="the version part to bump",
 )
-def main(config, part):
+@click.option(
+    "--dry-run",
+    "-n",
+    flag_value=True,
+    help="do not modify files",
+)
+def main(config: str, part: str, dry_run: bool):
     """The entry point for the cli"""
 
     RED = "red"
@@ -29,6 +37,10 @@ def main(config, part):
     BLUE = "blue"
     MAGENTA = "magenta"
     CYAN = "cyan"
+
+    if dry_run:
+        click.secho("[!] ", nl=False)
+        click.secho("Dry run", fg=RED)
 
     click.secho("[-] Loading config from ", nl=False)
     click.secho(config, fg=BLUE, nl=False)
@@ -57,11 +69,12 @@ def main(config, part):
         click.secho(" -> ", nl=False)
         click.secho(filever.version, fg=GREEN)
 
-    click.secho("[*] ", nl=False)
-    click.secho("saving", fg=CYAN, nl=False)
-    click.secho(" files to disk")
+    if not dry_run:
+        click.secho("[*] ", nl=False)
+        click.secho("saving", fg=CYAN, nl=False)
+        click.secho(" files to disk")
 
-    app.save_files()
+        app.save_files()
 
     click.secho("[+] ", nl=False)
     click.secho("b", fg=RED, nl=False)
