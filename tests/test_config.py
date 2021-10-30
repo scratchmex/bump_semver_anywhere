@@ -6,8 +6,8 @@ from bump_semver_anywhere import App
 from bump_semver_anywhere.app import FileVersion
 
 
-def test_config_load(patched_app):
-    app: App = patched_app()
+def test_config_load(patch_app):
+    app = App()
 
     config = app.config
     files = config.files
@@ -25,13 +25,19 @@ def test_config_load(patched_app):
         assert spec["pattern"]
 
     vcs = config.vcs
+    commit_msg = "release({part}): bump {current_version} -> {new_version}"
 
+    assert vcs
     assert vcs["commit"]
-    assert vcs["commit_msg"] == "release: bump {current_version} -> {new_version}"
+    assert vcs["commit_msg"] == commit_msg
+
+    assert app.vcs.commit_msg == commit_msg
+    for file in files.values():
+        assert file["filename"] in app.vcs.files
 
 
-def test_files_versions(patched_app):
-    app: App = patched_app()
+def test_files_versions(patch_app):
+    app = App()
     path = app.config.path
 
     exp_files_versions = [

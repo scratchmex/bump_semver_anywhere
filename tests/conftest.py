@@ -1,3 +1,4 @@
+import subprocess
 from pathlib import Path
 
 import pytest
@@ -20,14 +21,22 @@ def test_files_path(tmp_path):
 
     copytree(Path("tests/files"), p)
 
+    # init git repo
+    subprocess.run(["git", "init"], check=True, cwd=p)
+
     return p
 
 
 @pytest.fixture
-def patched_app(mocker: MockerFixture, test_config, test_files_path):
+def patch_vcs(mocker: MockerFixture):
+    from bump_semver_anywhere.app import BaseVCS
+
+    mocker.patch.object(BaseVCS, "_run_cmd", return_value=None)
+
+
+@pytest.fixture
+def patch_app(mocker: MockerFixture, test_config, test_files_path):
     from bump_semver_anywhere import App
 
     mocker.patch.object(App, "_load_config_file", return_value=test_config)
     mocker.patch.object(App, "_get_path", return_value=test_files_path)
-
-    return App

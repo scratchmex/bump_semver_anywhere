@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import re
+import subprocess
 from dataclasses import dataclass
 from fileinput import FileInput
 from pathlib import Path
@@ -55,6 +56,71 @@ def save_fileversion(filever: FileVersion):
             print(line, end="")
 
 
+class BaseVCS:
+    def __init__(self, commit_msg: str, files: list[str], cwd: Path):
+        self.commit_msg = commit_msg
+        self.commit_msg_fmtd = False
+        self.files = files
+        self.cwd = cwd
+
+    def _run_cmd(self, cmd: list[str]):
+        """Base function to call any shell command"""
+        subprocess.run(cmd, check=True, cwd=self.cwd)
+
+    def format_commit_msg(self, part: str, curr_version: str, new_version: str):
+        """Formats the `commit_msg` template in-place"""
+
+        fmtd = self.commit_msg.format(
+            part=part, current_version=curr_version, new_version=new_version
+        )
+
+        self.commit_msg = fmtd
+        self.commit_msg_fmtd = True
+
+    def commit(self):
+        """Commits the changes"""
+        if not self.commit_msg_fmtd:
+            raise RuntimeError("You need to call `format_commit_msg` before commiting")
+
+        cmd = self._get_commit_cmd()
+        cmd.append(self.commit_msg)
+
+        self._run_cmd(cmd)
+
+    def _get_commit_cmd(self) -> list[str]:
+        """The formed commit command to pass to subprocess.run
+
+        The last argument is inserted and should be the `commit_msg`
+        """
+        raise NotImplementedError
+
+    def stage(self):
+        """Stages the files"""
+        for file in self.files:
+            self.stage_file(file)
+
+    def stage_file(self, file: str):
+        cmd = self._get_stage_cmd()
+        cmd.append(file)
+
+        self._run_cmd(cmd)
+
+    def _get_stage_cmd(self) -> list[str]:
+        """The formed stage command to pass to subprocess.run
+
+        The last argument is inserted and should be the `filename`
+        """
+        raise NotImplementedError
+
+
+class Git(BaseVCS):
+    def _get_commit_cmd(self) -> list[str]:
+        return ["git", "commit", "-m"]
+
+    def _get_stage_cmd(self) -> list[str]:
+        return ["git", "add"]
+
+
 class App:
     """The main class
 
@@ -64,8 +130,23 @@ class App:
     def __init__(self, config_filename: str = "bump_semver_anywhere.toml"):
         # load_config -> verify config in place
         self.config = self.load_config(config_filename)
+        # init vcs if needed
+        self.vcs = self._init_vcs()
         # make FileVersions
         self.files_versions = self._init_files_versions()
+
+    def _init_vcs(self) -> BaseVCS | None:
+        if not self.config.vcs:
+            return None
+
+        # TODO: ability to choose the vcs
+        VCSClass = Git
+
+        return VCSClass(
+            commit_msg=self.config.vcs["commit_msg"],
+            files=[file["filename"] for file in self.config.files.values()],
+            cwd=self.config.path,
+        )
 
     def _init_file_version(self, file: str, config: FileConfig) -> FileVersion:
         """Initializes a FileVersion class from a FileConfig"""
@@ -105,7 +186,7 @@ class App:
         )
 
     def _init_files_versions(self) -> list[FileVersion]:
-        """Ïnitializes all the FileVersion's from AppConfig"""
+        """Initializes all the FileVersion's from AppConfig"""
         files_versions: list[FileVersion] = []
 
         for file, fileconfig in self.config.files.items():
@@ -172,8 +253,20 @@ class App:
             return pytomlpp.load(f)
 
     def bump(self, part: str, **kwargs):
+        # TODO: change when normalizing versions
+        # TODO: remember previous version
+        curr_version = self.files_versions[0].version
+
         for filever in self.files_versions:
             filever.version = filever.version.next_version(part, **kwargs)
+
+        # TODO: change when normalizing versions
+        new_version = self.files_versions[0].version
+
+        if self.vcs:
+            self.vcs.format_commit_msg(
+                part=part, curr_version=str(curr_version), new_version=str(new_version)
+            )
 
     def auto_bump(self):
         """Automatically bump the version"""

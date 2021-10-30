@@ -2,7 +2,7 @@
 
 [vcs]
 commit = true
-commit_msg = "release: bump {current_version} -> {new_version}"
+commit_msg = "release({part}): bump {current_version} -> {new_version}"
 
 [files]
 

@@ -4,8 +4,8 @@ from bump_semver_anywhere import App
 from bump_semver_anywhere.app import FileVersion
 
 
-def test_filever_save_and_bump(patched_app):
-    app: App = patched_app()
+def test_filever_save_and_bump(patch_app):
+    app = App()
 
     app.bump("patch")
 
@@ -49,7 +49,7 @@ def test_filever_save_and_bump(patched_app):
     app.save_files()
 
     # test re-read
-    app_new: App = patched_app()
+    app_new = App()
 
     for file_version in app_new.files_versions:
         assert file_version in exp_files_versions

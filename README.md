@@ -10,6 +10,10 @@ The following example will bump the version for docker and a python or javascrip
 ```toml
 # bump_semver_anywhere.toml
 
+[vcs]
+commit = true
+commit_msg = "release({part}): bump {current_version} -> {new_version}"
+
 [files]
 
 [files.docker]
@@ -18,7 +22,7 @@ pattern = 'image:.*?:(.*?)"'
 
 [files.python-module]
 filename = "__init__.py"
-pattern = "__version__ ?= ?'(.*?)'"
+pattern = '__version__ ?= ?"(.*?)"'
 
 [files.python-pyproject]
 filename = "pyproject.toml"
