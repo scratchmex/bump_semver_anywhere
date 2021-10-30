@@ -49,11 +49,18 @@ def main(config: str, part: str, dry_run: bool):
 
     click.secho("[=] config loaded")
 
+    click.secho("[ ] files to update")
     for filever in app.files_versions:
         click.secho(" • ", nl=False)
         click.secho(filever.file, fg=BLUE, nl=False)
         click.secho(": ", nl=False)
         click.secho(filever.version, fg=GREEN)
+
+    if app.vcs:
+        click.secho("[ ] VCS ", nl=False)
+        click.secho("enabled", fg=CYAN, nl=False)
+        click.secho(" with ", nl=False)
+        click.secho(app.vcs.__class__.__name__.lower(), fg=GREEN)
 
     click.secho("[-] bumping ", nl=False)
     click.secho(part, fg=GREEN, nl=False)
@@ -73,6 +80,19 @@ def main(config: str, part: str, dry_run: bool):
         click.secho(" files to disk")
 
         app.save_files()
+
+    if not dry_run and app.vcs:
+        click.secho("[*] ", nl=False)
+        click.secho("staging", fg=CYAN)
+
+        app.vcs.stage()
+
+        click.secho("[*] ", nl=False)
+        click.secho("commiting", fg=CYAN, nl=False)
+        click.secho(": ", nl=False)
+        click.secho(app.vcs.commit_msg, fg=GREEN)
+
+        app.vcs.commit()
 
     click.secho("[+] ", nl=False)
     click.secho("b", fg=RED, nl=False)

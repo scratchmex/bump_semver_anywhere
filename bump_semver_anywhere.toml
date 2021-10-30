@@ -1,4 +1,9 @@
 # bump_semver_anywhere.toml
+
+[vcs]
+commit = true
+commit_msg = "release({part}): bump {current_version} -> {new_version}"
+
 [files]
 
 [files.python-module]
