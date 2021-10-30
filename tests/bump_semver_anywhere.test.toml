@@ -1,0 +1,18 @@
+# bump_semver_anywhere.toml
+[files]
+
+[files.docker]
+filename = "docker-compose.yaml"
+pattern = 'image:.*?:(.*?)"'
+
+[files.python-module]
+filename = "__init__.py"
+pattern = '__version__ ?= ?"(.*?)"'
+
+[files.python-pyproject]
+filename = "pyproject.toml"
+pattern = 'version ?= ?"(.*?)"'
+
+[files.javascript]
+filename = "package.json"
+pattern = '"version": ?"(.*?)"'

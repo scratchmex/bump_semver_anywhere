@@ -1,38 +1,15 @@
 from pathlib import Path
-from textwrap import dedent
-from unittest.mock import patch
 
 import pytest
 import pytomlpp
 from pytest_mock import MockerFixture
 
-config_toml = dedent(
-    """
-    # bump_semver_anywhere.toml
-    [files]
-
-    [files.docker]
-    filename = "docker-compose.yaml"
-    pattern = 'image:.*?:(.*?)"'
-
-    [files.python-module]
-    filename = "__init__.py"
-    pattern = '__version__ ?= ?"(.*?)"'
-
-    [files.python-pyproject]
-    filename = "pyproject.toml"
-    pattern = 'version ?= ?"(.*?)"'
-
-    [files.javascript]
-    filename = "package.json"
-    pattern = '"version": ?"(.*?)"'
-"""
-)
-
 
 @pytest.fixture
 def test_config():
-    return pytomlpp.loads(config_toml)
+    p = Path("tests/bump_semver_anywhere.test.toml")
+
+    return pytomlpp.load(p)
 
 
 @pytest.fixture
