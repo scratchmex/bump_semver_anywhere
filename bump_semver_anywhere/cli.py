@@ -15,7 +15,7 @@ from .app import App
 @click.option(
     "--part",
     "-p",
-    default="patch",
+    required=True,
     type=click.Choice(("major", "minor", "patch", "prerelease")),
     show_default=True,
     help="the version part to bump",
