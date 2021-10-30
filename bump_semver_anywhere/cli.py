@@ -1,5 +1,3 @@
-from enum import Flag
-
 import click
 
 from .app import App

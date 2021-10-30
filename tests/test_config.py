@@ -26,7 +26,7 @@ def test_config_load(patched_app):
 
     vcs = config.vcs
 
-    assert vcs["commit"] == True
+    assert vcs["commit"]
     assert vcs["commit_msg"] == "release: bump {current_version} -> {new_version}"
 
 

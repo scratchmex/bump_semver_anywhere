@@ -7,7 +7,6 @@ from pathlib import Path
 from typing import Any, TypedDict
 
 import pytomlpp
-from attr.setters import frozen
 from semver import VersionInfo
 
 
@@ -89,7 +88,8 @@ class App:
 
         if not match:
             raise RuntimeError(
-                f"The pattern={pattern} did not match on file '{file}' with filename={config['filename']}"
+                f"The pattern={pattern} did not match on file '{file}'"
+                f" with filename={config['filename']}"
             )
 
         version_info = VersionInfo.parse(version)
@@ -118,7 +118,7 @@ class App:
         """Load app config"""
         configd = cls._load_config_file(filename)
 
-        if not "files" in configd:
+        if "files" not in configd:
             raise RuntimeError("Must specify a '[files]'")
 
         files: dict[str, FileConfig] = {}
@@ -137,8 +137,8 @@ class App:
         # TODO: specify the path on config
         path = cls._get_path()
 
-        # TODO: add ability to normalize version by having a `current_version` field on the config
-        #       panic if the versions do not coincide
+        # TODO: add ability to normalize version by having a `current_version` field
+        #       on the config to panic if the versions do not coincide
 
         vcs = None
         # TODO: decide if we should fail if vcs not specified in config
@@ -148,12 +148,13 @@ class App:
                 commit_flag = bool(vcsd["commit"])
                 if not commit_flag:
                     raise RuntimeError(
-                        "If you do not want to commit, skip the config section. It is the default behaivour"
+                        "If you do not want to commit, skip the config section."
+                        " It is the default behaviour"
                     )
                 vcs = VCSConfig(commit=commit_flag, commit_msg=vcsd["commit_msg"])
             elif "commit" in vcsd and "commit_msg" not in vcsd:
                 raise RuntimeError(
-                    f"If `commit` flag is passed, we expect to have a `commit_msg` also"
+                    "If `commit` flag is passed, we expect to have a `commit_msg` also"
                 )
 
         return AppConfig(config_dict=configd, files=files, path=path, vcs=vcs)
