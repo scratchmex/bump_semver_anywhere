@@ -10,6 +10,9 @@ The following example will bump the version for docker and a python or javascrip
 ```toml
 # bump_semver_anywhere.toml
 
+[general]
+current_version = "0.1.0"
+
 [vcs]
 commit = true
 commit_msg = "release({part}): bump {current_version} -> {new_version}"
