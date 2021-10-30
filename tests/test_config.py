@@ -10,8 +10,9 @@ def test_config_load(patch_app):
     app = App()
 
     config = app.config
-    files = config.files
 
+    # [files]
+    files = config.files
     assert files
 
     for x in ["docker", "python-module", "python-pyproject", "javascript"]:
@@ -24,6 +25,7 @@ def test_config_load(patch_app):
         assert spec["filename"]
         assert spec["pattern"]
 
+    # [vcs]
     vcs = config.vcs
     commit_msg = "release({part}): bump {current_version} -> {new_version}"
 
@@ -35,39 +37,51 @@ def test_config_load(patch_app):
     for file in files.values():
         assert file["filename"] in app.vcs.files
 
+    # [general]
+    assert str(app.config.current_version) == "0.1.0"
+    assert str(app.version) == "0.1.0"
+
 
 def test_files_versions(patch_app):
     app = App()
     path = app.config.path
 
+    version = VersionInfo.parse("0.1.0")
     exp_files_versions = [
         FileVersion(
             file=path / "docker-compose.yaml",
-            version=VersionInfo.parse("4.2.4"),
+            version=version,
             lineno=5,
             start_pos=22,
             end_pos=27,
         ),
         FileVersion(
             file=path / "package.json",
-            version=VersionInfo.parse("1.0.0"),
+            version=version,
             lineno=2,
             start_pos=16,
             end_pos=21,
         ),
         FileVersion(
             file=path / "__init__.py",
-            version=VersionInfo.parse("1.0.1"),
+            version=version,
             lineno=0,
             start_pos=15,
             end_pos=20,
         ),
         FileVersion(
             file=path / "pyproject.toml",
-            version=VersionInfo.parse("0.1.0"),
+            version=version,
             lineno=2,
             start_pos=11,
             end_pos=16,
+        ),
+        FileVersion(
+            file=path / "bump_semver_anywhere.toml",
+            version=version,
+            lineno=3,
+            start_pos=19,
+            end_pos=24,
         ),
     ]
 

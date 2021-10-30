@@ -1,30 +1,24 @@
-import subprocess
 from pathlib import Path
+from shutil import copy
 
 import pytest
-import pytomlpp
 from pytest_mock import MockerFixture
-
-
-@pytest.fixture
-def test_config():
-    p = Path("tests/bump_semver_anywhere.test.toml")
-
-    return pytomlpp.load(p)
 
 
 @pytest.fixture
 def test_files_path(tmp_path):
     from shutil import copytree
 
-    p = tmp_path / "files"
+    tmp_files = tmp_path / "files"
+    test = Path("tests")
 
-    copytree(Path("tests/files"), p)
+    copytree(test / "files", tmp_files)
+    copy(
+        test / "bump_semver_anywhere.test.toml",
+        tmp_files / "bump_semver_anywhere.toml",
+    )
 
-    # init git repo
-    subprocess.run(["git", "init"], check=True, cwd=p)
-
-    return p
+    return tmp_files
 
 
 @pytest.fixture
@@ -35,8 +29,7 @@ def patch_vcs(mocker: MockerFixture):
 
 
 @pytest.fixture
-def patch_app(mocker: MockerFixture, test_config, test_files_path):
+def patch_app(mocker: MockerFixture, test_files_path):
     from bump_semver_anywhere import App
 
-    mocker.patch.object(App, "_load_config_file", return_value=test_config)
     mocker.patch.object(App, "_get_path", return_value=test_files_path)

@@ -10,7 +10,7 @@ def test_git_stage_and_commit(mocker: MockerFixture, patch_app):
 
     app.bump("patch")
 
-    assert app.vcs.commit_msg == "release(patch): bump 4.2.4 -> 4.2.5"
+    assert app.vcs.commit_msg == "release(patch): bump 0.1.0 -> 0.1.1"
 
     mocked = mocker.patch.object(app.vcs, "_run_cmd", return_value=None)
 

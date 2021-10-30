@@ -34,10 +34,12 @@ class VCSConfig(TypedDict):
 
 @dataclass
 class AppConfig:
+    filename: str
     config_dict: dict
     files: dict[str, FileConfig]
     vcs: VCSConfig | None
     path: Path
+    current_version: VersionInfo
 
 
 def save_fileversion(filever: FileVersion):
@@ -130,6 +132,7 @@ class App:
     def __init__(self, config_filename: str = "bump_semver_anywhere.toml"):
         # load_config -> verify config in place
         self.config = self.load_config(config_filename)
+        self.version = self.config.current_version
         # init vcs if needed
         self.vcs = self._init_vcs()
         # make FileVersions
@@ -175,6 +178,12 @@ class App:
 
         version_info = VersionInfo.parse(version)
 
+        if version_info != self.version:
+            raise RuntimeError(
+                f"The file '{file}' has version '{version_info}' "
+                f"but current_version is '{self.version}'"
+            )
+
         start_pos, end_pos = match.span(1)
 
         return FileVersion(
@@ -197,8 +206,12 @@ class App:
     @classmethod
     def load_config(cls, filename: str) -> AppConfig:
         """Load app config"""
-        configd = cls._load_config_file(filename)
+        # TODO: specify the path on config
+        path = cls._get_path()
 
+        configd = cls._load_config_file(str(path / filename))
+
+        # [files]
         if "files" not in configd:
             raise RuntimeError("Must specify a '[files]'")
 
@@ -215,12 +228,13 @@ class App:
                 pattern=spec["pattern"],
             )
 
-        # TODO: specify the path on config
-        path = cls._get_path()
+        # save ourselves
+        config_pattern = r'current_version *?= *?"(.+?)"'
+        files["bump_semver_anywhere"] = FileConfig(
+            filename=filename, pattern=config_pattern
+        )
 
-        # TODO: add ability to normalize version by having a `current_version` field
-        #       on the config to panic if the versions do not coincide
-
+        # [vcs]
         vcs = None
         # TODO: decide if we should fail if vcs not specified in config
         if "vcs" in configd:
@@ -238,7 +252,24 @@ class App:
                     "If `commit` flag is passed, we expect to have a `commit_msg` also"
                 )
 
-        return AppConfig(config_dict=configd, files=files, path=path, vcs=vcs)
+        # [general]
+        if "general" not in configd:
+            raise RuntimeError("Must specify '[general]'")
+
+        general = configd["general"]
+        if "current_version" not in general:
+            raise RuntimeError("Must specify 'current_version' in '[general]'")
+
+        current_version = VersionInfo.parse(general["current_version"])
+
+        return AppConfig(
+            filename=filename,
+            config_dict=configd,
+            files=files,
+            path=path,
+            vcs=vcs,
+            current_version=current_version,
+        )
 
     @staticmethod
     def _get_path() -> Path:
@@ -253,19 +284,16 @@ class App:
             return pytomlpp.load(f)
 
     def bump(self, part: str, **kwargs):
-        # TODO: change when normalizing versions
-        # TODO: remember previous version
-        curr_version = self.files_versions[0].version
+        self.version = self.version.next_version(part)
 
         for filever in self.files_versions:
             filever.version = filever.version.next_version(part, **kwargs)
 
-        # TODO: change when normalizing versions
-        new_version = self.files_versions[0].version
-
         if self.vcs:
             self.vcs.format_commit_msg(
-                part=part, curr_version=str(curr_version), new_version=str(new_version)
+                part=part,
+                curr_version=str(self.config.current_version),
+                new_version=str(self.version),
             )
 
     def auto_bump(self):
