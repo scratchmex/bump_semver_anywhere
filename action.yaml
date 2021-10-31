@@ -10,3 +10,4 @@ runs:
   args:
     - '-p'
     - ${{ inputs.part }}
+  entrypoint: 'gh-action/entrypoint.sh'
