@@ -1,0 +1,12 @@
+name: 'bump semver anywhere - action'
+description: 'Bump your semantic version of any software using regex'
+inputs:
+  part:
+    description: 'which part to bump'
+    required: true
+runs:
+  using: 'docker'
+  image: 'dockerfile'
+  args:
+    - '-p'
+    - ${{ inputs.part }}

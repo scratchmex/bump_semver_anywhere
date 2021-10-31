@@ -1,0 +1,45 @@
+name: Bump version
+on:
+  issue_comment:
+    types: [created, edited]
+jobs:
+  rebase:
+    name: Rebase
+    if: |
+      ${{ github.event.issue.pull_request && (
+        contains(github.event.comment.body, '/release major') ||
+        contains(github.event.comment.body, '/release minor') ||
+        contains(github.event.comment.body, '/release patch') ||
+        contains(github.event.comment.body, '/release prerelease')
+      ) }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the latest code
+        uses: actions/checkout@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Bump major
+        if: ${{ contains(github.event.comment.body, '/release major') }}
+        uses: ./
+        with:
+          part: major
+      - name: Bump minor
+        if: ${{ contains(github.event.comment.body, '/release minor') }}
+        uses: ./
+        with:
+          part: minor
+      - name: Bump patch
+        if: ${{ contains(github.event.comment.body, '/release patch') }}
+        uses: ./
+        with:
+          part: patch
+      - name: Bump prerelease
+        if: ${{ contains(github.event.comment.body, '/release prerelease') }}
+        uses: ./
+        with:
+          part: prerelease
+      - name: Push changes
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ github.ref }}
