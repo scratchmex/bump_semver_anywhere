@@ -73,5 +73,7 @@ COPY --from=build /usr/bin/git /usr/bin/git
 WORKDIR /app
 
 COPY ./bump_semver_anywhere ./bump_semver_anywhere
+COPY ./gh-action/entrypoint.sh ./entrypoint.sh
 
-ENTRYPOINT [ "python", "-m", "bump_semver_anywhere" ]
+# ENTRYPOINT [ "python", "-m", "bump_semver_anywhere" ]
+ENTRYPOINT [ "./entrypoint.sh" ]
