@@ -1,4 +1,5 @@
-# bump semver anywhere
+# bump semver anywhere 
+[![PyPI version](https://badge.fury.io/py/bump-semver-anywhere.svg)](https://badge.fury.io/py/bump-semver-anywhere)
 
 This is a library intented to replace all semversion bumpers and finally be agnostic of the language / use case for your semantic versioning. This is achieved by providing the regex pattern to the place and filename of the string that contains the semantic version.
 
@@ -7,6 +8,66 @@ This is a library intented to replace all semversion bumpers and finally be agno
 - install `pip install bump_semver_anywhere`
 - create a `bump_semver_anywhere.toml` in the root of your project (see _config example_)
 - run `bump_semver_anywhere -p patch`
+
+```console
+Hello there. Today I want to show you a library I have been working on. I was inspired by necessity of changing all the versions in every file: `pyproject.toml`, `__init__.py`, `docker-compose.yaml`, `package.json`, etc. I searched for packages that do this but either they are specific to the language (Python or Javascript) or I did not like the customization for it. At the end I decided to create `bump_semver_anywhere`. This is inspired in [bump2version](https://github.com/c4urself/bump2version/) but with a much simpler approach. It uses TOML for configuration.
+
+> This is a library intended to replace all semantic version bumpers and finally be agnostic of the language. This is achieved by providing the regex pattern to the place and filename of the string that contains the version.
+
+repo: https://github.com/scratchmex/bump_semver_anywhere 
+
+configuration example:
+```toml
+# bump_semver_anywhere.toml
+
+[general]
+current_version = "0.1.2"
+
+[vcs]
+commit = true
+commit_msg = "release({part}): bump {current_version} -> {new_version}"
+
+[files]
+
+[files.python-module]
+filename = "bump_semver_anywhere/__init__.py"
+pattern = '__version__ ?= ?"(.*?)"'
+
+[files.python-pyproject]
+filename = "pyproject.toml"
+pattern = 'version ?= ?"(.*?)"'
+```
+
+It can be run as CLI `bump_semver_anywhere -p patch` or triggered via a Github action by commenting `/release patch`
+
+```console
+❯ python -m bump_semver_anywhere -p patch
+[-] Loading config from bump_semver_anywhere.toml and bumping patch
+[=] config loaded
+[ ] files to update
+ • bump_semver_anywhere/__init__.py: 0.1.1
+ • pyproject.toml: 0.1.1
+ • bump_semver_anywhere.toml: 0.1.1
+[ ] VCS enabled with git
+[-] bumping patch version
+ • bump_semver_anywhere/__init__.py -> 0.1.2
+ • pyproject.toml -> 0.1.2
+ • bump_semver_anywhere.toml -> 0.1.2
+[*] saving files to disk
+[*] staging
+[*] commiting: release(patch): bump 0.1.1 -> 0.1.2
+black....................................................................Passed
+isort....................................................................Passed
+flake8...................................................................Passed
+[main 5092515] release(patch): bump 0.1.1 -> 0.1.2
+ 3 files changed, 3 insertions(+), 3 deletions(-)
+[+] bye bye
+```
+
+
+PS: If you have any suggestions for changing the name to a much simpler one I will be grateful.
+PS2: I accept PR and any feedback.
+```
 
 ### cli
 
