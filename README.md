@@ -35,3 +35,11 @@ pattern = 'version ?= ?"(.*?)"'
 filename = "package.json"
 pattern = '"version": ?"(.*?)"'
 ```
+
+## github action
+
+See `.github/workflows/bump_semver_anywhere.yaml` to integrate the action to your repo and change `uses: ./` by `uses: scratchmex/bump_semver_anywhere@main`
+
+The current behaviour is to comment `/release <part>` (e.g. `/release patch`) in a pull request. 
+Per default it pushes the bump commit to the branch the PR points to. 
+Therefore it should be commented after accepting the PR
