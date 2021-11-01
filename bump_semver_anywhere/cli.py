@@ -27,7 +27,7 @@ from .app import App
     help="do not modify files",
 )
 def main(config: str, part: str, dry_run: bool):
-    """The entry point for the cli"""
+    """Bump your semantic version of any software using regex"""
 
     RED = "red"
     GREEN = "green"
