@@ -27,9 +27,6 @@ flake8 = "^4.0.1"
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
 
-[tool.poetry.plugins.console_scripts]
-"bump_semver_anywhere" = "bump_semver_anywhere.cli:main"
-
 [tool.isort]
 profile = "black"
 
