@@ -3,6 +3,8 @@ name = "bump_semver_anywhere"
 version = "0.1.1"
 description = "Bump your semantic version of any software using regex"
 authors = ["Ivan Gonzalez <scratchmex@gmail.com>"]
+readme = "README.md"
+repository = "https://github.com/scratchmex/all-relative"
 
 [tool.poetry.dependencies]
 python = "^3.8"
