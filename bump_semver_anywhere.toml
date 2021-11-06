@@ -1,7 +1,7 @@
 # bump_semver_anywhere.toml
 
 [general]
-current_version = "0.1.2"
+current_version = "0.2.0"
 
 [vcs]
 commit = true
