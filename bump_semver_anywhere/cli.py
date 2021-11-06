@@ -1,9 +1,23 @@
+from pathlib import Path
+
 import click
 
-from .app import App
+from .app import App, init_config
+
+RED = "red"
+GREEN = "green"
+YELLOW = "yellow"
+BLUE = "blue"
+MAGENTA = "magenta"
+CYAN = "cyan"
 
 
-@click.command()
+@click.group()
+def main():
+    pass
+
+
+@main.command()
 @click.option(
     "--config",
     "-c",
@@ -26,15 +40,8 @@ from .app import App
     flag_value=True,
     help="do not modify files",
 )
-def main(config: str, part: str, dry_run: bool):
+def bump(config: str, part: str, dry_run: bool):
     """Bump your semantic version of any software using regex"""
-
-    RED = "red"
-    GREEN = "green"
-    YELLOW = "yellow"
-    BLUE = "blue"
-    MAGENTA = "magenta"
-    CYAN = "cyan"
 
     if dry_run:
         click.secho("[!] ", nl=False)
@@ -101,6 +108,30 @@ def main(config: str, part: str, dry_run: bool):
     click.secho("b", fg=CYAN, nl=False)
     click.secho("y", fg=BLUE, nl=False)
     click.secho("e", fg=MAGENTA)
+
+
+@main.command()
+@click.option(
+    "--output",
+    "-o",
+    default="bump_semver_anywhere.toml",
+    show_default=True,
+    type=click.Path(path_type=Path),
+    help="the output config file path",
+)
+def init(output: Path):
+    """Initialize the config"""
+    if output.suffix != ".toml":
+        click.secho("[!] output needs to have a toml extension", fg=YELLOW)
+        return
+
+    if output.exists():
+        click.secho(f"[!] the file {output} already exists. Exiting", fg=RED)
+        return
+
+    with open(output, "w") as f:
+        config = init_config()
+        f.write(config)
 
 
 if __name__ == "__main__":

@@ -4,6 +4,7 @@ import re
 import subprocess
 from fileinput import FileInput
 from pathlib import Path
+from textwrap import dedent
 from typing import Any, Dict, Optional
 
 import pytomlpp
@@ -60,6 +61,25 @@ def save_fileversion(filever: FileVersion):
                 line = line[:start] + str(filever.version) + line[end:]
 
             print(line, end="")
+
+
+def init_config() -> str:
+    config = dedent(
+        """
+    # bump_semver_anywhere.toml
+
+    [general]
+    current_version = ""
+
+    [vcs]
+    commit = true
+    commit_msg = "release({part}): bump {current_version} -> {new_version}"
+
+    [files]
+    """
+    ).strip()
+
+    return config
 
 
 class BaseVCS:
