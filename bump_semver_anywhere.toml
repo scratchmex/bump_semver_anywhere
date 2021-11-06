@@ -19,4 +19,4 @@ pattern = 'version ?= ?"(.*?)"'
 
 [files.python-pytest]
 filename = "tests/test_bump_semver_anywhere.py"
-pattern = '__version__ ?= ?"(.*?)"'
+pattern = '__version__ ?== ?"(.*?)"'
