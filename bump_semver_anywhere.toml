@@ -16,3 +16,7 @@ pattern = '__version__ ?= ?"(.*?)"'
 [files.python-pyproject]
 filename = "pyproject.toml"
 pattern = 'version ?= ?"(.*?)"'
+
+[files.python-pytest]
+filename = "tests/test_bump_semver_anywhere.py"
+pattern = '__version__ ?= ?"(.*?)"'
