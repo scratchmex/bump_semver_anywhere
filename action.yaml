@@ -8,5 +8,6 @@ runs:
   using: 'docker'
   image: 'dockerfile'
   args:
-    - '-p'
+    - 'bump'
+    - '--part'
     - ${{ inputs.part }}

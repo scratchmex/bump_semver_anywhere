@@ -38,9 +38,9 @@ ENV PATH="$POETRY_HOME/bin:$PYSETUP_PATH/.venv/bin:$PATH"
 RUN apt-get update \
     && apt-get install --no-install-recommends -y \
     # deps for installing poetry
-    curl \
-    # deps for building python deps
-    build-essential
+    curl
+# deps for building python deps
+# build-essential
 
 # install poetry - respects $POETRY_HOME
 RUN curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/install-poetry.py | python -
@@ -76,4 +76,4 @@ COPY ./bump_semver_anywhere ./bump_semver_anywhere
 COPY ./gh-action/entrypoint.sh ./entrypoint.sh
 
 # ENTRYPOINT [ "python", "-m", "bump_semver_anywhere" ]
-ENTRYPOINT [ "./entrypoint.sh" ]
+ENTRYPOINT [ "/app/entrypoint.sh" ]

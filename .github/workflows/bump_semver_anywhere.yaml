@@ -4,13 +4,13 @@ on:
     types: [created, edited]
 jobs:
   bump:
-    if: |
-      ${{ github.event.issue.pull_request && (
+    if: | 
+      github.event.issue.pull_request && (
         contains(github.event.comment.body, '/release major') ||
         contains(github.event.comment.body, '/release minor') ||
         contains(github.event.comment.body, '/release patch') ||
         contains(github.event.comment.body, '/release prerelease')
-      ) }}
+      )
     runs-on: ubuntu-latest
     steps:
       - name: Checkout the latest code
@@ -19,22 +19,22 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
       - name: Bump major
         if: ${{ contains(github.event.comment.body, '/release major') }}
-        uses: ./
+        uses: scratchmex/bump_semver_anywhere@main
         with:
           part: major
       - name: Bump minor
         if: ${{ contains(github.event.comment.body, '/release minor') }}
-        uses: ./
+        uses: scratchmex/bump_semver_anywhere@main
         with:
           part: minor
       - name: Bump patch
         if: ${{ contains(github.event.comment.body, '/release patch') }}
-        uses: ./
+        uses: scratchmex/bump_semver_anywhere@main
         with:
           part: patch
       - name: Bump prerelease
         if: ${{ contains(github.event.comment.body, '/release prerelease') }}
-        uses: ./
+        uses: scratchmex/bump_semver_anywhere@main
         with:
           part: prerelease
       - name: Push changes
