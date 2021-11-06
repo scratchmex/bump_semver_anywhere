@@ -2,17 +2,16 @@ from __future__ import annotations
 
 import re
 import subprocess
-from dataclasses import dataclass
 from fileinput import FileInput
 from pathlib import Path
-from typing import Any, TypedDict
+from typing import Any, Dict, Optional
 
 import pytomlpp
+from pydantic import BaseModel
 from semver import VersionInfo
 
 
-@dataclass
-class FileVersion:
+class FileVersion(BaseModel):
     """Represents a version in a file"""
 
     file: Path
@@ -21,25 +20,30 @@ class FileVersion:
     start_pos: int
     end_pos: int
 
+    class Config:
+        arbitrary_types_allowed = True
 
-class FileConfig(TypedDict):
+
+class FileConfig(BaseModel):
     filename: str
     pattern: str
 
 
-class VCSConfig(TypedDict):
+class VCSConfig(BaseModel):
     commit: bool
     commit_msg: str
 
 
-@dataclass
-class AppConfig:
+class AppConfig(BaseModel):
     filename: str
     config_dict: dict
-    files: dict[str, FileConfig]
-    vcs: VCSConfig | None
+    files: Dict[str, FileConfig]
+    vcs: Optional[VCSConfig]
     path: Path
     current_version: VersionInfo
+
+    class Config:
+        arbitrary_types_allowed = True
 
 
 def save_fileversion(filever: FileVersion):
@@ -164,8 +168,8 @@ class App:
         VCSClass = Git
 
         vcs = VCSClass(
-            commit_msg=self.config.vcs["commit_msg"],
-            files=[file["filename"] for file in self.config.files.values()],
+            commit_msg=self.config.vcs.commit_msg,
+            files=[file.filename for file in self.config.files.values()],
             cwd=self.config.path,
         )
 
@@ -177,14 +181,14 @@ class App:
     def _init_file_version(self, file: str, config: FileConfig) -> FileVersion:
         """Initializes a FileVersion class from a FileConfig"""
         path = self.config.path
-        f = path / config["filename"]
+        f = path / config.filename
 
         if not f.is_file():
             raise RuntimeError(
                 f"The file '{file}' with filename={f} is not an actual file"
             )
 
-        pattern = re.compile(config["pattern"])
+        pattern = re.compile(config.pattern)
 
         with f.open() as fp:
             for lineno, line in enumerate(fp):
@@ -196,7 +200,7 @@ class App:
         if not match:
             raise RuntimeError(
                 f"The pattern={pattern} did not match on file '{file}'"
-                f" with filename={config['filename']}"
+                f" with filename={config.filename}"
             )
 
         version_info = VersionInfo.parse(version)

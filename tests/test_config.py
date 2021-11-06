@@ -19,23 +19,20 @@ def test_config_load(patch_app):
         assert x in files
 
     for spec in files.values():
-        assert "filename" in spec
-        assert "pattern" in spec
-
-        assert spec["filename"]
-        assert spec["pattern"]
+        assert spec.filename
+        assert spec.pattern
 
     # [vcs]
     vcs = config.vcs
     commit_msg = "release({part}): bump {current_version} -> {new_version}"
 
     assert vcs
-    assert vcs["commit"]
-    assert vcs["commit_msg"] == commit_msg
+    assert vcs.commit
+    assert vcs.commit_msg == commit_msg
 
     assert app.vcs.commit_msg == commit_msg
     for file in files.values():
-        assert file["filename"] in app.vcs.files
+        assert file.filename in app.vcs.files
 
     # [general]
     assert str(app.config.current_version) == "0.1.0"
