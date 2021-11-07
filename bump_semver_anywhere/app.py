@@ -86,6 +86,7 @@ class BaseVCS:
     def __init__(self, commit_msg: str, files: list[str], cwd: Path):
         self.commit_msg = commit_msg
         self.commit_msg_fmtd = False
+        self._tag_cmd: list[str] | None
         self.files = files
         self.cwd = cwd
 
@@ -147,6 +148,37 @@ class BaseVCS:
         """
         raise NotImplementedError
 
+    def format_tag_cmd(self, version: str, msg: str = None):
+        """Build the `_tag_cmd` in-place"""
+
+        if not msg:
+            if not self.commit_msg_fmtd:
+                raise RuntimeError(
+                    "You need to call `format_commit_msg` "
+                    "before commiting and then to tag."
+                )
+
+            msg = self.commit_msg
+
+        self._tag_cmd = self._get_tag_cmd(version, msg)
+
+    def tag(self):
+        """Tag the version.
+
+        Expected to be run after commit
+        """
+
+        cmd = self._tag_cmd
+
+        self._run_cmd(cmd)
+
+    def _get_tag_cmd(self, version: str, msg: str) -> list[str]:
+        """The formed tag command to pass to subprocess.run
+
+        Expected to use `version` and `msg`
+        """
+        raise NotImplementedError
+
 
 class Git(BaseVCS):
     def _get_commit_cmd(self) -> list[str]:
@@ -163,6 +195,9 @@ class Git(BaseVCS):
             return True
 
         return False
+
+    def _get_tag_cmd(self, version: str, msg: str) -> list[str]:
+        return ["git", "tag", "-a", version, "-m", msg]
 
 
 class App:
@@ -342,6 +377,9 @@ class App:
                 curr_version=str(self.config.current_version),
                 new_version=str(self.version),
             )
+
+            # TODO: custom tag_msg
+            self.vcs.format_tag_cmd(str(self.version), msg=None)
 
     def auto_bump(self):
         """Automatically bump the version"""

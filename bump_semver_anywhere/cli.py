@@ -101,6 +101,11 @@ def bump(config: str, part: str, dry_run: bool):
 
         app.vcs.commit()
 
+        click.secho("[*] ", nl=False)
+        click.secho("tagging", fg=CYAN)
+
+        app.vcs.tag()
+
     click.secho("[+] ", nl=False)
     click.secho("b", fg=RED, nl=False)
     click.secho("y", fg=YELLOW, nl=False)
