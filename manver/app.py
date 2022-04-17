@@ -66,7 +66,7 @@ def save_fileversion(filever: FileVersion):
 def init_config() -> str:
     config = dedent(
         """
-    # bump_semver_anywhere.toml
+    # .manver.toml
 
     [general]
     current_version = ""
@@ -203,10 +203,10 @@ class Git(BaseVCS):
 class App:
     """The main class
 
-    config_filename: 'bump_semver_anywhere.toml'
+    config_filename: '.manver.toml'
     """
 
-    def __init__(self, config_filename: str = "bump_semver_anywhere.toml"):
+    def __init__(self, config_filename: str = ".manver.toml"):
         # load_config -> verify config in place
         self.config = self.load_config(config_filename)
         self.version = self.config.current_version
@@ -312,9 +312,7 @@ class App:
 
         # save ourselves
         config_pattern = r'current_version *?= *?"(.+?)"'
-        files["bump_semver_anywhere"] = FileConfig(
-            filename=filename, pattern=config_pattern
-        )
+        files["manver"] = FileConfig(filename=filename, pattern=config_pattern)
 
         # [vcs]
         vcs = None

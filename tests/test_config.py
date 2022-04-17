@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from semver import VersionInfo
 
-from bump_semver_anywhere import App
-from bump_semver_anywhere.app import FileVersion
+from manver import App
+from manver.app import FileVersion
 
 
 def test_config_load(patch_app):
@@ -74,7 +74,7 @@ def test_files_versions(patch_app):
             end_pos=16,
         ),
         FileVersion(
-            file=path / "bump_semver_anywhere.toml",
+            file=path / ".manver.toml",
             version=version,
             lineno=3,
             start_pos=19,

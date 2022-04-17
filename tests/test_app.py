@@ -1,7 +1,7 @@
 from semver import VersionInfo
 
-from bump_semver_anywhere import App
-from bump_semver_anywhere.app import FileVersion
+from manver import App
+from manver.app import FileVersion
 
 
 def test_filever_save_and_bump(patch_app):
@@ -44,7 +44,7 @@ def test_filever_save_and_bump(patch_app):
             end_pos=16,
         ),
         FileVersion(
-            file=path / "bump_semver_anywhere.toml",
+            file=path / ".manver.toml",
             version=version,
             lineno=3,
             start_pos=19,

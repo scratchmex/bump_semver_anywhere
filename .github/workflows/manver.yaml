@@ -19,22 +19,22 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
       - name: Bump major
         if: ${{ contains(github.event.comment.body, '/release major') }}
-        uses: scratchmex/bump_semver_anywhere@main
+        uses: scratchmex/manver@main
         with:
           part: major
       - name: Bump minor
         if: ${{ contains(github.event.comment.body, '/release minor') }}
-        uses: scratchmex/bump_semver_anywhere@main
+        uses: scratchmex/manver@main
         with:
           part: minor
       - name: Bump patch
         if: ${{ contains(github.event.comment.body, '/release patch') }}
-        uses: scratchmex/bump_semver_anywhere@main
+        uses: scratchmex/manver@main
         with:
           part: patch
       - name: Bump prerelease
         if: ${{ contains(github.event.comment.body, '/release prerelease') }}
-        uses: scratchmex/bump_semver_anywhere@main
+        uses: scratchmex/manver@main
         with:
           part: prerelease
       - name: Push changes

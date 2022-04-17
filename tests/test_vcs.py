@@ -1,6 +1,6 @@
 from pytest_mock.plugin import MockerFixture
 
-from bump_semver_anywhere.app import App
+from manver.app import App
 
 
 def test_git_stage_and_commit(mocker: MockerFixture, patch_app):

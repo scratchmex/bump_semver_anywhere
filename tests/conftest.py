@@ -14,8 +14,8 @@ def test_files_path(tmp_path):
 
     copytree(test / "files", tmp_files)
     copy(
-        test / "bump_semver_anywhere.test.toml",
-        tmp_files / "bump_semver_anywhere.toml",
+        test / ".manver.test.toml",
+        tmp_files / ".manver.toml",
     )
 
     return tmp_files
@@ -23,7 +23,7 @@ def test_files_path(tmp_path):
 
 @pytest.fixture
 def patch_vcs(mocker: MockerFixture):
-    from bump_semver_anywhere.app import BaseVCS
+    from manver.app import BaseVCS
 
     class FakeProcess:
         stdout = ""
@@ -33,6 +33,6 @@ def patch_vcs(mocker: MockerFixture):
 
 @pytest.fixture
 def patch_app(mocker: MockerFixture, patch_vcs, test_files_path):
-    from bump_semver_anywhere import App
+    from manver import App
 
     mocker.patch.object(App, "_get_path", return_value=test_files_path)

@@ -21,7 +21,7 @@ def main():
 @click.option(
     "--config",
     "-c",
-    default="bump_semver_anywhere.toml",
+    default=".manver.toml",
     show_default=True,
     type=click.Path(exists=True, dir_okay=False),
     help="the config file",
@@ -119,7 +119,7 @@ def bump(config: str, part: str, dry_run: bool):
 @click.option(
     "--output",
     "-o",
-    default="bump_semver_anywhere.toml",
+    default=".manver.toml",
     show_default=True,
     type=click.Path(path_type=Path),
     help="the output config file path",

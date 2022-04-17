@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "bump_semver_anywhere"
+name = "manver"
 version = "0.3.0"
 description = "Bump your semantic version of any software using regex"
 authors = ["Ivan Gonzalez <scratchmex@gmail.com>"]
@@ -22,7 +22,7 @@ pytest-mock = "^3.6.1"
 flake8 = "^4.0.1"
 
 [tool.poetry.scripts]
-"bump_semver_anywhere" = "bump_semver_anywhere.cli:main"
+"manver" = "manver.cli:main"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

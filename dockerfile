@@ -72,12 +72,12 @@ COPY --from=build /usr/bin/git /usr/bin/git
 
 WORKDIR /app
 
-COPY ./bump_semver_anywhere ./bump_semver_anywhere
+COPY ./manver ./manver
 COPY pyproject.toml ./
 COPY README.md README.md
 COPY ./gh-action/entrypoint.sh ./entrypoint.sh
 
 RUN pip install --no-deps .
 
-# ENTRYPOINT [ "python", "-m", "bump_semver_anywhere" ]
+# ENTRYPOINT [ "python", "-m", "manver" ]
 ENTRYPOINT [ "/app/entrypoint.sh" ]

@@ -1,4 +1,4 @@
-from bump_semver_anywhere import __version__
+from manver import __version__
 
 
 def test_version():

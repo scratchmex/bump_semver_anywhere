@@ -1,7 +1,7 @@
-# bump_semver_anywhere.toml
+# .manver.toml
 
 [general]
-current_version = "0.3.0"
+current_version = "0.1.0"
 
 [vcs]
 commit = true
@@ -9,14 +9,18 @@ commit_msg = "release({part}): bump {current_version} -> {new_version}"
 
 [files]
 
+[files.docker]
+filename = "docker-compose.yaml"
+pattern = 'image:.*?:(.*?)"'
+
 [files.python-module]
-filename = "bump_semver_anywhere/__init__.py"
+filename = "__init__.py"
 pattern = '__version__ ?= ?"(.*?)"'
 
 [files.python-pyproject]
 filename = "pyproject.toml"
 pattern = 'version ?= ?"(.*?)"'
 
-[files.python-pytest]
-filename = "tests/test_bump_semver_anywhere.py"
-pattern = '__version__ ?== ?"(.*?)"'
+[files.javascript]
+filename = "package.json"
+pattern = '"version": ?"(.*?)"'
