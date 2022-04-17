@@ -12,3 +12,10 @@ Because of this, I propose to have automatic identification for the version part
 ## CI integration
 
 Currently our integration is to have a command to trigger the bump and commit via Github actions. However, because we propose more automation, it is expected for the CI integration to be more extended. I propose to have one extra point. On each PR the action should make a comment about the auto bump of the version according to that PR. The already manual trigger for the PR should by default be the automatic bump with the option to force a specific bump.
+
+## Version management
+
+Right now we can only manage one global version. For monorepos that is not feasible. Given that motivation the following things are considered in the refactor:
+- one repo can have multiple projects each with its own version
+- one project can have different files that track the version
+- 
