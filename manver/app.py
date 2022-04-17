@@ -2,11 +2,13 @@ from __future__ import annotations
 
 import re
 import subprocess
+from datetime import datetime
 from fileinput import FileInput
 from pathlib import Path
 from textwrap import dedent
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, TypedDict
 
+import semantic_version
 import tomli
 from pydantic import BaseModel
 from semver import VersionInfo
@@ -388,3 +390,33 @@ class App:
         """Save the files version"""
         for filever in self.files_versions:
             save_fileversion(filever)
+
+
+class ProjectVersion(TypedDict):
+    simple: str
+    full: str
+
+
+class Project:
+    def __init__(
+        self, name: str, root_dir: str, version: str, version_files: list[str]
+    ):
+        self.name = name
+        self.root_dir = Path(root_dir)
+        self.semantic_version = semantic_version.Version(version)
+        self.version_files = [Path(s) for s in version_files]
+
+    def next_version(self, identifier: str, last_sha: str) -> "ProjectVersion":
+        if identifier == "patch":
+            next_version = self.semantic_version.next_patch()
+        elif identifier == "minor":
+            next_version = self.semantic_version.next_minor()
+        elif identifier == "major":
+            next_version = self.semantic_version.next_major()
+
+        now = datetime.now()
+        simple_version_str = str(next_version)
+        next_version.build = (last_sha, f"{now:%Y%m%dT%H%M%SZ}")
+        next_version_str = str(next_version)
+
+        return {"simple": simple_version_str, "full": next_version_str}

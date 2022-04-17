@@ -1,6 +1,6 @@
 from semver import VersionInfo
 
-from manver import App
+from manver import App, Project
 from manver.app import FileVersion
 
 
@@ -65,3 +65,27 @@ def test_filever_save_and_bump(patch_app):
 
     for file_version in app_new.files_versions:
         assert file_version in exp_files_versions
+
+
+def test_project():
+    proyecto1 = Project(
+        name="proyecto1",
+        root_dir="app1/src",
+        version="1.4.5",
+        version_files=["app1/src/__version__.py", "app1/src/docker-compose.yaml"],
+    )
+
+    proyecto2 = Project(
+        name="proyecto2",
+        root_dir="app2/src",
+        version="2.0.0-alpha.1",
+        version_files=["app2/src/__version__.py", "app2/src/docker-compose.yaml"],
+    )
+
+    proy1_bump = proyecto1.next_version(identifier="minor", last_sha="012abcd")
+    proy1_bump["simple"] == "2.5.0"
+    proy1_bump["full"] == "2.5.0+012abcd.20220101T010101Z"
+
+    proy2_bump = proyecto2.next_version(identifier="major", last_sha="012abcd")
+    proy2_bump["simple"] == "2.0.0"
+    proy2_bump["full"] == "2.0.0-alpha.1+012abcd.20220101T010101Z"
