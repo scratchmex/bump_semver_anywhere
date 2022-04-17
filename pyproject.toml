@@ -8,14 +8,14 @@ repository = "https://github.com/scratchmex/all-relative"
 
 [tool.poetry.dependencies]
 python = "^3.8"
-pytomlpp = "^1.0.3"
+tomli = "^2.0.1"
 semver = "^2.13.0"
 click = "^8.0.3"
 pydantic = "^1.8.2"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"
-black = {version = "^21.9b0", allow-prereleases = true}
+black = {version = "stable"}
 pre-commit = "^2.15.0"
 isort = "^5.9.3"
 pytest-mock = "^3.6.1"
@@ -30,10 +30,6 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.isort]
 profile = "black"
-
-[[tool.mypy.overrides]]
-module = "pytomlpp"
-ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
 module = "semver"

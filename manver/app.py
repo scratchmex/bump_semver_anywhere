@@ -7,7 +7,7 @@ from pathlib import Path
 from textwrap import dedent
 from typing import Any, Dict, Optional
 
-import pytomlpp
+import tomli
 from pydantic import BaseModel
 from semver import VersionInfo
 
@@ -360,8 +360,8 @@ class App:
         filename: str,
     ) -> dict[str, Any]:
         """Loads the config from a file"""
-        with open(filename) as f:
-            return pytomlpp.load(f)
+        with open(filename, "rb") as f:
+            return tomli.load(f)
 
     def bump(self, part: str, **kwargs):
         self.version = self.version.next_version(part)
