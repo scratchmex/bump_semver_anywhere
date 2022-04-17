@@ -1,13 +1,23 @@
 repos:
-  - repo: https://github.com/psf/black
-    rev: stable
+  - repo: local
     hooks:
-      - id: black
-  - repo: https://github.com/PyCQA/isort
-    rev: 5.9.3
-    hooks:
-      - id: isort
-  - repo: https://gitlab.com/pycqa/flake8.git
-    rev: 4.0.1
-    hooks:
-      - id: flake8
+    - name: black
+      id: black
+      language: system
+      entry: poetry run black
+      types_or: [python, pyi]
+
+    - name: isort
+      id: isort
+      language: system
+      entry: poetry run isort
+      args: ['--filter-files']
+      require_serial: true
+      types_or: [cython, pyi, python]
+
+    - name: flake8
+      id: flake8
+      language: system
+      entry: poetry run flake8
+      require_serial: true
+      types: [python]
