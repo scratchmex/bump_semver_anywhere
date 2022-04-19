@@ -87,11 +87,10 @@ def init_config() -> str:
 class BaseVCS:
     def __init__(
         self,
-        files: list[str] = [],
         cwd: Path = Path(),
     ):
         self._tag_cmd: list[str] | None
-        self.files = files
+
         self.cwd = cwd
 
     def _run_cmd(self, cmd: list[str], **kwargs):
@@ -121,9 +120,9 @@ class BaseVCS:
                 "The current directory is dirty. Watch out for unstaged files."
             )
 
-    def stage(self):
+    def stage(self, files: list[str]):
         """Stages the files"""
-        for file in self.files:
+        for file in files:
             self.stage_file(file)
 
     def stage_file(self, file: str):
@@ -211,10 +210,7 @@ class App:
         # TODO: ability to choose the vcs
         VCSClass = Git
 
-        vcs = VCSClass(
-            files=[file.filename for file in self.config.files.values()],
-            cwd=self.config.path,
-        )
+        vcs = VCSClass(cwd=self.config.path)
 
         # check if not dirty before anything
         vcs.check_dirty()

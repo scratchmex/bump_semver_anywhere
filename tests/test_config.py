@@ -30,9 +30,6 @@ def test_config_load(patch_app):
     assert vcs.commit
     assert vcs.commit_msg == commit_msg
 
-    for file in files.values():
-        assert file.filename in app.vcs.files
-
     # [general]
     assert str(app.config.current_version) == "0.1.0"
     assert str(app.version) == "0.1.0"
