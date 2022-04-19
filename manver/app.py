@@ -85,7 +85,12 @@ def init_config() -> str:
 
 
 class BaseVCS:
-    def __init__(self, commit_msg: str, files: list[str], cwd: Path):
+    def __init__(
+        self,
+        commit_msg: str = "",
+        files: list[str] = [],
+        cwd: Path = Path(),
+    ):
         self.commit_msg = commit_msg
         self.commit_msg_fmtd = False
         self._tag_cmd: list[str] | None
@@ -200,6 +205,13 @@ class Git(BaseVCS):
 
     def _get_tag_cmd(self, version: str, msg: str) -> list[str]:
         return ["git", "tag", "-a", version, "-m", msg]
+
+    def get_log(self, start_hash: str):
+        p = self._run_cmd(
+            ["git", "log", "--oneline", f"{start_hash}..@"], capture_output=True
+        )
+
+        return p.stdout.decode("utf8")
 
 
 class App:

@@ -1,7 +1,9 @@
+import subprocess
+
 from semver import VersionInfo
 
 from manver import App, Project
-from manver.app import FileVersion
+from manver.app import FileVersion, Git
 
 
 def test_filever_save_and_bump(patch_app):
@@ -89,3 +91,18 @@ def test_project():
     proy2_bump = proyecto2.next_version(identifier="major", last_sha="012abcd")
     proy2_bump["simple"] == "2.0.0"
     proy2_bump["full"] == "2.0.0-alpha.1+012abcd.20220101T010101Z"
+
+
+def test_git_info(tmp_path, git_repo):
+    p = subprocess.run(["git", "log", "--oneline"], capture_output=True, cwd=tmp_path)
+    log = p.stdout.decode("utf8")
+    hashes = [s[:7] for s in log.strip().split("\n")]
+    # not included
+    last_hash = hashes[-1]
+    log_exp = "\n".join(log.strip().split("\n")[:-1]) + "\n"
+
+    git = Git(cwd=tmp_path)
+
+    glog = git.get_log(last_hash)
+
+    assert glog == log_exp
