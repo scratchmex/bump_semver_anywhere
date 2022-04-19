@@ -87,12 +87,9 @@ def init_config() -> str:
 class BaseVCS:
     def __init__(
         self,
-        commit_msg: str = "",
         files: list[str] = [],
         cwd: Path = Path(),
     ):
-        self.commit_msg = commit_msg
-        self.commit_msg_fmtd = False
         self._tag_cmd: list[str] | None
         self.files = files
         self.cwd = cwd
@@ -101,23 +98,10 @@ class BaseVCS:
         """Base function to call any shell command"""
         return subprocess.run(cmd, check=True, cwd=self.cwd, **kwargs)
 
-    def format_commit_msg(self, part: str, curr_version: str, new_version: str):
-        """Formats the `commit_msg` template in-place"""
-
-        fmtd = self.commit_msg.format(
-            part=part, current_version=curr_version, new_version=new_version
-        )
-
-        self.commit_msg = fmtd
-        self.commit_msg_fmtd = True
-
-    def commit(self):
+    def commit(self, msg: str):
         """Commits the changes"""
-        if not self.commit_msg_fmtd:
-            raise RuntimeError("You need to call `format_commit_msg` before commiting")
-
         cmd = self._get_commit_cmd()
-        cmd.append(self.commit_msg)
+        cmd.append(msg)
 
         self._run_cmd(cmd)
 
@@ -155,17 +139,8 @@ class BaseVCS:
         """
         raise NotImplementedError
 
-    def format_tag_cmd(self, version: str, msg: str = None):
+    def format_tag_cmd(self, version: str, msg: str):
         """Build the `_tag_cmd` in-place"""
-
-        if not msg:
-            if not self.commit_msg_fmtd:
-                raise RuntimeError(
-                    "You need to call `format_commit_msg` "
-                    "before commiting and then to tag."
-                )
-
-            msg = self.commit_msg
 
         self._tag_cmd = self._get_tag_cmd(version, msg)
 
@@ -237,7 +212,6 @@ class App:
         VCSClass = Git
 
         vcs = VCSClass(
-            commit_msg=self.config.vcs.commit_msg,
             files=[file.filename for file in self.config.files.values()],
             cwd=self.config.path,
         )
@@ -377,6 +351,13 @@ class App:
         with open(filename, "rb") as f:
             return tomli.load(f)
 
+    def get_commit_msg(self, part: str):
+        return self.config.vcs.commit_msg.format(
+            part=part,
+            current_version=str(self.config.current_version),
+            new_version=str(self.version),
+        )
+
     def bump(self, part: str, **kwargs):
         self.version = self.version.next_version(part)
 
@@ -384,14 +365,12 @@ class App:
             filever.version = filever.version.next_version(part, **kwargs)
 
         if self.vcs:
-            self.vcs.format_commit_msg(
-                part=part,
-                curr_version=str(self.config.current_version),
-                new_version=str(self.version),
-            )
+            cm = self.get_commit_msg(part)
 
             # TODO: custom tag_msg
-            self.vcs.format_tag_cmd(str(self.version), msg=None)
+            self.vcs.format_tag_cmd(str(self.version), msg=cm)
+
+            return cm
 
     def auto_bump(self):
         """Automatically bump the version"""

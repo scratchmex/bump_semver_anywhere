@@ -30,7 +30,6 @@ def test_config_load(patch_app):
     assert vcs.commit
     assert vcs.commit_msg == commit_msg
 
-    assert app.vcs.commit_msg == commit_msg
     for file in files.values():
         assert file.filename in app.vcs.files
 

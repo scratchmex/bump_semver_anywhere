@@ -8,9 +8,7 @@ def test_git_stage_and_commit(mocker: MockerFixture, patch_app):
 
     assert app.vcs
 
-    app.bump("patch")
-
-    assert app.vcs.commit_msg == "release(patch): bump 0.1.0 -> 0.1.1"
+    cm = app.bump("patch")
 
     mocked = mocker.patch.object(app.vcs, "_run_cmd", return_value=None)
 
@@ -22,6 +20,6 @@ def test_git_stage_and_commit(mocker: MockerFixture, patch_app):
 
     mocked.reset_mock()
 
-    app.vcs.commit()
+    app.vcs.commit(cm)
 
-    mocked.assert_called_once_with(app.vcs._get_commit_cmd() + [app.vcs.commit_msg])
+    mocked.assert_called_once_with(app.vcs._get_commit_cmd() + [cm])
