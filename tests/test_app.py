@@ -1,5 +1,8 @@
+from __future__ import annotations
+
 import subprocess
 
+from pytest_mock.plugin import MockerFixture
 from semver import VersionInfo
 
 from manver import Project, VersionManager
@@ -111,3 +114,103 @@ def test_git_info(tmp_path, git_repo):
     st = ConventionCommitsStrategy(glog)
 
     assert st.apply() == "minor"
+
+
+def test_config_load(patch_version_manager):
+    app = VersionManager()
+
+    config = app.config
+
+    # [files]
+    files = config.files
+    assert files
+
+    for x in ["docker", "python-module", "python-pyproject", "javascript"]:
+        assert x in files
+
+    for spec in files.values():
+        assert spec.filename
+        assert spec.pattern
+
+    # [vcs]
+    vcs = config.vcs
+    commit_msg = "release({part}): bump {current_version} -> {new_version}"
+
+    assert vcs
+    assert vcs.commit
+    assert vcs.commit_msg == commit_msg
+
+    # [general]
+    assert str(app.config.current_version) == "0.1.0"
+    assert str(app.version) == "0.1.0"
+
+
+def test_files_versions(patch_version_manager):
+    app = VersionManager()
+    path = app.config.path
+
+    version = VersionInfo.parse("0.1.0")
+    exp_files_versions = [
+        FileVersion(
+            file=path / "docker-compose.yaml",
+            version=version,
+            lineno=5,
+            start_pos=22,
+            end_pos=27,
+        ),
+        FileVersion(
+            file=path / "package.json",
+            version=version,
+            lineno=2,
+            start_pos=16,
+            end_pos=21,
+        ),
+        FileVersion(
+            file=path / "__init__.py",
+            version=version,
+            lineno=0,
+            start_pos=15,
+            end_pos=20,
+        ),
+        FileVersion(
+            file=path / "pyproject.toml",
+            version=version,
+            lineno=2,
+            start_pos=11,
+            end_pos=16,
+        ),
+        FileVersion(
+            file=path / ".manver.toml",
+            version=version,
+            lineno=3,
+            start_pos=19,
+            end_pos=24,
+        ),
+    ]
+
+    files_versions = app.files_versions
+
+    for file_version in files_versions:
+        assert file_version in exp_files_versions
+
+
+def test_git_stage_and_commit(mocker: MockerFixture, patch_version_manager):
+    app = VersionManager()
+
+    assert app.vcs
+
+    cm = app.bump("patch")
+
+    mocked = mocker.patch.object(app.vcs, "_run_cmd", return_value=None)
+
+    app.vcs.stage(app.config.files)
+
+    for file in app.config.files:
+        cmd = app.vcs._get_stage_cmd() + [file]
+        mocked.assert_any_call(cmd)
+
+    mocked.reset_mock()
+
+    app.vcs.commit(cm)
+
+    mocked.assert_called_once_with(app.vcs._get_commit_cmd() + [cm])
