@@ -3,7 +3,7 @@ import subprocess
 from semver import VersionInfo
 
 from manver import Project, VersionManager
-from manver.app import FileVersion, Git
+from manver.app import ConventionCommitsStrategy, FileVersion, Git
 
 
 def test_filever_save_and_bump(patch_version_manager):
@@ -106,3 +106,8 @@ def test_git_info(tmp_path, git_repo):
     glog = git.get_log(last_hash)
 
     assert glog == log_exp
+
+    # test bump strat
+    st = ConventionCommitsStrategy(glog)
+
+    assert st.apply() == "minor"

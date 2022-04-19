@@ -6,7 +6,7 @@ from datetime import datetime
 from fileinput import FileInput
 from pathlib import Path
 from textwrap import dedent
-from typing import Any, Dict, Optional, TypedDict
+from typing import Any, Dict, Literal, Optional, TypedDict
 
 import semantic_version
 import tomli
@@ -180,12 +180,46 @@ class Git(BaseVCS):
     def _get_tag_cmd(self, version: str, msg: str) -> list[str]:
         return ["git", "tag", "-a", version, "-m", msg]
 
-    def get_log(self, start_hash: str):
-        p = self._run_cmd(
-            ["git", "log", "--oneline", f"{start_hash}..@"], capture_output=True
-        )
+    def get_log(self, start_hash: str = None):
+        cmd = ["git", "log", "--oneline"]
+        if start_hash:
+            cmd.append(f"{start_hash}..@")
+        p = self._run_cmd(cmd, capture_output=True)
 
-        return p.stdout.decode("utf8")
+        if p.stdout:
+            return p.stdout.decode("utf8")
+
+        return ""
+
+
+class VersionBumpStrategy:
+    def __init__(self, commit_log: str) -> None:
+        self.commit_log = commit_log
+
+    def apply(self) -> Literal["major", "minor", "patch"] | None:
+        raise NotImplementedError
+
+
+class GenericStrategy(VersionBumpStrategy):
+    def apply(self) -> Literal["major", "minor", "patch"] | None:
+        return "patch"
+
+
+class ConventionCommitsStrategy(VersionBumpStrategy):
+    _minor_re = re.compile(r"^\w{7} feat", re.MULTILINE)
+    _major_re = re.compile(r"^\w{7} [\w()]+!:", re.MULTILINE)
+
+    def apply(self) -> Literal["major", "minor", "patch"] | None:
+        if not self.commit_log:
+            return None
+
+        if self._major_re.search(self.commit_log):
+            return "major"
+
+        if self._minor_re.search(self.commit_log):
+            return "minor"
+
+        return "patch"
 
 
 class VersionManager:
@@ -194,7 +228,11 @@ class VersionManager:
     config_filename: '.manver.toml'
     """
 
-    def __init__(self, config_filename: str = ".manver.toml"):
+    def __init__(
+        self,
+        config_filename: str = ".manver.toml",
+        bump_strategy: VersionBumpStrategy = GenericStrategy,
+    ):
         # load_config -> verify config in place
         self.config = self.load_config(config_filename)
         self.version = self.config.current_version
@@ -202,6 +240,7 @@ class VersionManager:
         self.vcs = self._init_vcs()
         # make FileVersions
         self.files_versions = self._init_files_versions()
+        self.bump_strategy = bump_strategy(self.vcs.get_log())
 
     def _init_vcs(self) -> BaseVCS | None:
         if not self.config.vcs:
@@ -370,8 +409,9 @@ class VersionManager:
 
     def auto_bump(self):
         """Automatically bump the version"""
-        # TODO: add strategy for which version to bump
-        self.bump("minor")
+        part = self.bump_strategy.apply()
+        if part:
+            self.bump(part)
 
     def save_files(self):
         """Save the files version"""
