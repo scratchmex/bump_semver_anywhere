@@ -34,10 +34,10 @@ def patch_vcs(mocker: MockerFixture):
 
 
 @pytest.fixture
-def patch_app(mocker: MockerFixture, patch_vcs, test_files_path):
-    from manver import App
+def patch_version_manager(mocker: MockerFixture, patch_vcs, test_files_path):
+    from manver import VersionManager
 
-    mocker.patch.object(App, "_get_path", return_value=test_files_path)
+    mocker.patch.object(VersionManager, "_get_path", return_value=test_files_path)
 
 
 @pytest.fixture

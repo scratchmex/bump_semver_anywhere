@@ -1,6 +1,6 @@
 __version__ = "0.3.0"
 
 
-from .app import App, Project
+from .app import Project, VersionManager
 
-__all__ = ["App", "Project"]
+__all__ = ["VersionManager", "Project"]

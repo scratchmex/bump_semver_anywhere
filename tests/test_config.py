@@ -2,12 +2,12 @@ from __future__ import annotations
 
 from semver import VersionInfo
 
-from manver import App
+from manver import VersionManager
 from manver.app import FileVersion
 
 
-def test_config_load(patch_app):
-    app = App()
+def test_config_load(patch_version_manager):
+    app = VersionManager()
 
     config = app.config
 
@@ -35,8 +35,8 @@ def test_config_load(patch_app):
     assert str(app.version) == "0.1.0"
 
 
-def test_files_versions(patch_app):
-    app = App()
+def test_files_versions(patch_version_manager):
+    app = VersionManager()
     path = app.config.path
 
     version = VersionInfo.parse("0.1.0")

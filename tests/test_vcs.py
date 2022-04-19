@@ -1,10 +1,10 @@
 from pytest_mock.plugin import MockerFixture
 
-from manver.app import App
+from manver.app import VersionManager
 
 
-def test_git_stage_and_commit(mocker: MockerFixture, patch_app):
-    app = App()
+def test_git_stage_and_commit(mocker: MockerFixture, patch_version_manager):
+    app = VersionManager()
 
     assert app.vcs
 

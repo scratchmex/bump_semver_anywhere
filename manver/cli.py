@@ -2,7 +2,7 @@ from pathlib import Path
 
 import click
 
-from .app import App, init_config
+from .app import VersionManager, init_config
 
 RED = "red"
 GREEN = "green"
@@ -52,7 +52,7 @@ def bump(config: str, part: str, dry_run: bool):
     click.secho(" and bumping ", nl=False)
     click.secho(part, fg=GREEN)
 
-    app = App(config_filename=config)
+    app = VersionManager(config_filename=config)
 
     click.secho("[=] config loaded")
 

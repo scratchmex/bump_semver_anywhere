@@ -2,12 +2,12 @@ import subprocess
 
 from semver import VersionInfo
 
-from manver import App, Project
+from manver import Project, VersionManager
 from manver.app import FileVersion, Git
 
 
-def test_filever_save_and_bump(patch_app):
-    app = App()
+def test_filever_save_and_bump(patch_version_manager):
+    app = VersionManager()
 
     PART = "patch"
 
@@ -63,7 +63,7 @@ def test_filever_save_and_bump(patch_app):
     app.save_files()
 
     # test re-read
-    app_new = App()
+    app_new = VersionManager()
 
     for file_version in app_new.files_versions:
         assert file_version in exp_files_versions

@@ -188,7 +188,7 @@ class Git(BaseVCS):
         return p.stdout.decode("utf8")
 
 
-class App:
+class VersionManager:
     """The main class
 
     config_filename: '.manver.toml'
