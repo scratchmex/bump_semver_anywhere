@@ -1,0 +1,12 @@
+bump_strategy = "conventional_commits"
+commit_msg_tpl = "release({identifier}): bump {name} {prev_version} -> {next_version}"
+
+[projects.test-project]
+version = "0.1.0"  #: test-project
+
+files = [
+  {path = "src/__init__.py", pattern = '__version__ ?= ?"(.*?)"'},
+  {path = "src/pyproject.toml", pattern = 'version ?= ?"(.*?)"'},
+  {path = "src/package.json", pattern = '"version": ?"(.*?)"'},
+  {path = "src/docker-compose.yaml", pattern = 'image:.*?:(.*?)"'},
+]

@@ -1,22 +1,15 @@
 # .manver.toml
 
-[general]
-current_version = "0.3.0"
+commit_msg_tpl = "release({identifier}): bump {name} {prev_version} -> {next_version}"
+bump_strategy = "conventional_commits"
 
-[vcs]
-commit = true
-commit_msg = "release({part}): bump {current_version} -> {new_version}"
+[projects]
 
-[files]
+[projects.manver]
+version = "0.3.0"  #: manver
 
-[files.python-module]
-filename = "manver/__init__.py"
-pattern = '__version__ ?= ?"(.*?)"'
-
-[files.python-pyproject]
-filename = "pyproject.toml"
-pattern = 'version ?= ?"(.*?)"'
-
-[files.python-pytest]
-filename = "tests/test_manver.py"
-pattern = '__version__ ?== ?"(.*?)"'
+files = [
+  {path = "manver/__init__.py", pattern = '__version__ ?= ?"(.*?)"'},
+  {path = "pyproject.toml", pattern = 'version ?= ?"(.*?)"'},
+  {path = "tests/test_manver.py", pattern = '__version__ ?== ?"(.*?)"'},
+]

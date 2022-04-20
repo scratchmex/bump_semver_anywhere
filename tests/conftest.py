@@ -1,47 +1,20 @@
+import os
 import subprocess
 from pathlib import Path
-from shutil import copy
 from textwrap import dedent
 
 import pytest
-from pytest_mock import MockerFixture
 
 
 @pytest.fixture
-def test_files_path(tmp_path):
-    from shutil import copytree
+def mock_project_files(tmp_path):
+    from shutil import copy, copytree
 
-    tmp_files = tmp_path / "files"
-    test = Path("tests")
+    test_files = Path("tests/files")
 
-    copytree(test / "files", tmp_files)
-    copy(
-        test / ".manver.test.toml",
-        tmp_files / ".manver.toml",
-    )
+    copytree(test_files / "src", tmp_path / "src")
+    copy(test_files / ".manver.test.toml", tmp_path)
 
-    return tmp_files
-
-
-@pytest.fixture
-def patch_vcs(mocker: MockerFixture):
-    from manver.app import BaseVCS
-
-    class FakeProcess:
-        stdout = ""
-
-    mocker.patch.object(BaseVCS, "_run_cmd", return_value=FakeProcess)
-
-
-@pytest.fixture
-def patch_version_manager(mocker: MockerFixture, patch_vcs, test_files_path):
-    from manver import VersionManager
-
-    mocker.patch.object(VersionManager, "_get_path", return_value=test_files_path)
-
-
-@pytest.fixture
-def git_repo(tmp_path):
     msgs = dedent(
         """
         fix: execute as script
@@ -69,3 +42,15 @@ def git_repo(tmp_path):
 
     for msg in msgs.split("\n"):
         subprocess.run(["git", "commit", "--allow-empty", "-m", msg], cwd=tmp_path)
+
+    subprocess.run(["git", "add", "-A"], cwd=tmp_path)
+    subprocess.run(["git", "commit", "-m", "chore: add all"], cwd=tmp_path)
+
+    # p = subprocess.run(
+    #     ["git", "log", "-n", "1", "--pretty=format:%H", "@^.."],
+    #     capture_output=True,
+    #     cwd=tmp_path,
+    # )
+    # last_hash = p.stdout.decode()
+
+    os.chdir(tmp_path)

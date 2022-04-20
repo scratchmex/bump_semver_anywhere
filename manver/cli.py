@@ -2,7 +2,13 @@ from pathlib import Path
 
 import click
 
-from .app import VersionManager, init_config
+from .lib import (
+    VersionIdentifier,
+    commit_version,
+    get_next_version,
+    get_projects,
+    init_config,
+)
 
 RED = "red"
 GREEN = "green"
@@ -27,84 +33,68 @@ def main():
     help="the config file",
 )
 @click.option(
-    "--part",
-    "-p",
-    required=True,
-    type=click.Choice(("major", "minor", "patch", "prerelease")),
+    "--id",
+    "-i",
+    required=False,
+    type=click.Choice(VersionIdentifier._value2member_map_),
     show_default=True,
-    help="the version part to bump",
+    default=VersionIdentifier.AUTO.value,
+    help="the version identifier to bump",
 )
 @click.option(
-    "--dry-run",
-    "-n",
+    "--yes",
+    "-y",
     flag_value=True,
-    help="do not modify files",
+    default=False,
+    help="accept the changes",
 )
-def bump(config: str, part: str, dry_run: bool):
+def bump(config: Path, id: str, yes: bool):
     """Bump your semantic version of any software using regex"""
 
-    if dry_run:
+    if yes:
         click.secho("[!] ", nl=False)
-        click.secho("Dry run", fg=RED)
+        click.secho("auto commiting", fg=RED)
 
-    click.secho("[-] Loading config from ", nl=False)
+    click.secho("[-] loading config from ", nl=False)
     click.secho(config, fg=BLUE, nl=False)
-    click.secho(" and bumping ", nl=False)
-    click.secho(part, fg=GREEN)
+    click.secho("...", nl=False)
 
-    app = VersionManager(config_filename=config)
+    projects = get_projects(Path(config))
 
-    click.secho("[=] config loaded")
-
-    click.secho("[ ] files to update")
-    for filever in app.files_versions:
-        click.secho(" • ", nl=False)
-        click.secho(filever.file, fg=BLUE, nl=False)
-        click.secho(": ", nl=False)
-        click.secho(filever.version, fg=GREEN)
-
-    if app.vcs:
-        click.secho("[ ] VCS ", nl=False)
-        click.secho("enabled", fg=CYAN, nl=False)
-        click.secho(" with ", nl=False)
-        click.secho(app.vcs.__class__.__name__.lower(), fg=GREEN)
+    click.secho("done", fg=GREEN)
 
     click.secho("[-] bumping ", nl=False)
-    click.secho(part, fg=GREEN, nl=False)
-    click.secho(" version")
+    click.secho(id, fg=CYAN, nl=False)
+    click.secho("...", nl=False)
 
-    app.bump(part)
+    next_vers = [
+        get_next_version(p, VersionIdentifier._value2member_map_[id]) for p in projects
+    ]
 
-    for filever in app.files_versions:
-        click.secho(" • ", nl=False)
-        click.secho(filever.file, fg=BLUE, nl=False)
+    click.secho("done", fg=GREEN)
+
+    for next_ver, project in zip(next_vers, projects):
+        click.secho(f"[=] {project.name!s} project ", nl=False)
+        click.secho(project.version, fg=MAGENTA, nl=False)
         click.secho(" -> ", nl=False)
-        click.secho(filever.version, fg=GREEN)
+        click.secho(next_ver, fg=GREEN)
 
-    if not dry_run:
-        click.secho("[*] ", nl=False)
-        click.secho("saving", fg=CYAN, nl=False)
-        click.secho(" files to disk")
+        for file in project.files:
+            click.secho(f" •  {file.path!s}")
 
-        app.save_files()
+    if not yes:
+        if click.confirm("[?] do you want to commit the versions?", default=False):
+            yes = True
 
-    if not dry_run and app.vcs:
-        click.secho("[*] ", nl=False)
-        click.secho("staging", fg=CYAN)
-
-        app.vcs.stage()
-
+    if yes:
         click.secho("[*] ", nl=False)
         click.secho("commiting", fg=CYAN, nl=False)
-        click.secho(": ", nl=False)
-        click.secho(app.vcs.commit_msg, fg=GREEN)
+        click.secho(" version...", nl=False)
 
-        app.vcs.commit()
+        for next_ver, project in zip(next_vers, projects):
+            commit_version(project, next_ver)
 
-        click.secho("[*] ", nl=False)
-        click.secho("tagging", fg=CYAN)
-
-        app.vcs.tag()
+        click.secho("done", fg=GREEN)
 
     click.secho("[+] ", nl=False)
     click.secho("b", fg=RED, nl=False)
