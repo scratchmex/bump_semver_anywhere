@@ -6,7 +6,7 @@ bump_strategy = "conventional_commits"
 [projects]
 
 [projects.manver]
-version = "0.3.0"  #: manver
+version = "1.0.0"  #: manver
 
 files = [
   {path = "manver/__init__.py", pattern = '__version__ ?= ?"(.*?)"'},
