@@ -4,41 +4,28 @@ on:
     types: [created, edited]
 jobs:
   bump:
-    if: | 
-      github.event.issue.pull_request && (
-        contains(github.event.comment.body, '/release major') ||
-        contains(github.event.comment.body, '/release minor') ||
-        contains(github.event.comment.body, '/release patch') ||
-        contains(github.event.comment.body, '/release prerelease')
-      )
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout the latest code
-        uses: actions/checkout@v2
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Bump major
-        if: ${{ contains(github.event.comment.body, '/release major') }}
-        uses: scratchmex/manver@main
-        with:
-          part: major
-      - name: Bump minor
-        if: ${{ contains(github.event.comment.body, '/release minor') }}
-        uses: scratchmex/manver@main
-        with:
-          part: minor
-      - name: Bump patch
-        if: ${{ contains(github.event.comment.body, '/release patch') }}
-        uses: scratchmex/manver@main
-        with:
-          part: patch
-      - name: Bump prerelease
-        if: ${{ contains(github.event.comment.body, '/release prerelease') }}
-        uses: scratchmex/manver@main
-        with:
-          part: prerelease
-      - name: Push changes
-        uses: ad-m/github-push-action@master
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          branch: ${{ github.ref }}
+    - name: handle comment with Comvent
+      uses: rytswd/comvent@v0.4.5
+      id: comvent
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        config-path: .github/comvent-manver-setup.yaml
+
+    - name: Checkout the latest code
+      uses: actions/checkout@v2
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        fetch-depth: 0
+
+    - name: run manver
+      uses: scratchmex/manver@main
+      with:
+        id: ${{ steps.comvent.outputs.manver-command }}
+
+    - name: Push changes
+      uses: ad-m/github-push-action@master
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        branch: ${{ github.ref }}

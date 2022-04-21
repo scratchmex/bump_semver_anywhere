@@ -7,7 +7,7 @@ readme = "README.md"
 repository = "https://github.com/scratchmex/all-relative"
 
 [tool.poetry.dependencies]
-python = "^3.8"
+python = "^3.9"
 tomli = "^2.0.1"
 click = "^8.0.3"
 pydantic = "^1.8.2"

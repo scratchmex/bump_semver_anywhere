@@ -95,6 +95,8 @@ class ProjectVersion:
     def next(self, identifier: VersionIdentifier) -> "ProjectVersion":
         _version = self._version
 
+        print(f"{identifier=}")
+
         if identifier == VersionIdentifier.MAJOR:
             version = _version.next_major()
         elif identifier == VersionIdentifier.MINOR:
@@ -117,7 +119,14 @@ class Git:
 
     def _run_cmd(self, cmd: list[str], **kwargs):
         """Base function to call any shell command"""
-        return subprocess.run(cmd, check=True, cwd=self._cwd, **kwargs)
+        try:
+            p = subprocess.run(cmd, check=True, cwd=self._cwd, **kwargs)
+        except subprocess.CalledProcessError as e:
+            print(f"{e.stderr=}")
+            print(f"{e.stdout=}")
+            raise
+
+        return p
 
     def last_commit_hash_updated_files(self, files: list[Path]) -> str:
         cmd = ["git", "log", "--oneline", "--"]
@@ -126,9 +135,10 @@ class Git:
             cmd.append(str(file))
 
         p = self._run_cmd(cmd, capture_output=True)
+
         out = p.stdout
         if isinstance(out, bytes):
-            out = out.decode("utf8")
+            out = out.decode("utf8").strip()
 
         if not out:
             raise RuntimeError("no git history")
@@ -203,7 +213,7 @@ class VersionBumpStrategy:
 
     def _conventional_commits(self):
         if not self.commit_log:
-            return None
+            raise RuntimeError("no commit log")
 
         if self._cc_major_re.search(self.commit_log):
             return VersionIdentifier.MAJOR

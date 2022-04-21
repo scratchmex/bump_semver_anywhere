@@ -1,83 +1,93 @@
+# syntax = docker/dockerfile:1.3
+# this ^^ line is very important as it enables support for --mount=type=cache
+# ref: https://github.com/moby/buildkit/blob/master/frontend/dockerfile/docs/syntax.md#run---mounttypecache
+
+## --- globals 
+
+# the following arguments aredefined via ARG to use later in other base images
+# ref: https://github.com/moby/moby/issues/37345
 ARG POETRY_HOME="/opt/poetry"
 ARG PYSETUP_PATH="/opt/pysetup"
-# defined via ARG to use later in other base images
 
 
-## base
-FROM python:3.8-slim as base
+## --- poetry base image
+FROM python:3.9-slim as base
 
 ARG POETRY_HOME
 ARG PYSETUP_PATH
-
 # python env
-ENV PYTHONUNBUFFERED=1 \
+ENV \
+    ## - python
+    PYTHONUNBUFFERED=1 \
     # prevents python creating .pyc files
     PYTHONDONTWRITEBYTECODE=1 \
     \
-    # pip
-    PIP_NO_CACHE_DIR=off \
+    ## - pip
+    PIP_NO_CACHE_DIR=1 \
     \
-    # poetry
+    ## - poetry
     # https://python-poetry.org/docs/configuration/#using-environment-variables
     # make poetry install to this location
     POETRY_HOME=$POETRY_HOME \
     # make poetry create the virtual environment in the project's root
     # it gets named `.venv`
-    POETRY_VIRTUALENVS_IN_PROJECT=true \
+    POETRY_VIRTUALENVS_IN_PROJECT=1 \
     # do not ask any interactive question
     POETRY_NO_INTERACTION=1 \
+    # poetry specific cache
+    POETRY_CACHE_DIR="/opt/poetry/.cache" \
     \
-    # paths
+    ## - paths
     # this is where our requirements + virtual environment will live
     PYSETUP_PATH=$PYSETUP_PATH
-
 # prepend poetry and venv to path
 ENV PATH="$POETRY_HOME/bin:$PYSETUP_PATH/.venv/bin:$PATH"
 
 # install curl and essentials
 RUN apt-get update \
     && apt-get install --no-install-recommends -y \
-    # deps for installing poetry
-    curl
-# deps for building python deps
-# build-essential
-
-# install poetry - respects $POETRY_HOME
+        # deps for installing poetry
+        curl
+        # deps for building python deps
+        # build-essential
+# install poetry
+# by default it respects $POETRY_HOME
 RUN curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/install-poetry.py | python -
 
 
-## build
+## --- build stage
 FROM base AS build
 
 WORKDIR $PYSETUP_PATH
 
 COPY poetry.lock pyproject.toml ./
 
-# install runtime deps - uses $POETRY_VIRTUALENVS_IN_PROJECT internally
-RUN poetry install --no-dev
+# install runtime deps
+# uses $POETRY_VIRTUALENVS_IN_PROJECT internally
+# it also uses poetry caching, thanks @cbrochtrup
+# ref: https://github.com/python-poetry/poetry/issues/3374#issuecomment-857878275
+# RUN --mount=type=cache,target=$POETRY_CACHE_DIR/cache \
+#     --mount=type=cache,target=$POETRY_CACHE_DIR/artifacts \
+#     poetry install --no-dev --no-root
+RUN poetry install --no-dev --no-root
 
-# install git
-RUN apt-get install --no-install-recommends -y \ 
-    git
 
-
-## production
-FROM python:3.8-slim as production
+## --- production image
+FROM python:3.9-alpine as production
 
 ARG PYSETUP_PATH
 ENV PATH="$PYSETUP_PATH/.venv/bin:$PATH"
-
-COPY --from=build $PYSETUP_PATH $PYSETUP_PATH
-COPY --from=build /usr/bin/git /usr/bin/git
-
 WORKDIR /app
 
+COPY --from=build $PYSETUP_PATH $PYSETUP_PATH
 COPY ./manver ./manver
-COPY pyproject.toml ./
-COPY README.md README.md
-COPY ./gh-action/entrypoint.sh ./entrypoint.sh
+COPY pyproject.toml README.md ./
+COPY ./docker/entrypoint.sh ./
 
+# we install the current package with pip so that
+# we can access their commands
 RUN pip install --no-deps .
+RUN apk add --no-cache git
 
-# ENTRYPOINT [ "python", "-m", "manver" ]
+# default entrypoint is "python"
 ENTRYPOINT [ "/app/entrypoint.sh" ]
