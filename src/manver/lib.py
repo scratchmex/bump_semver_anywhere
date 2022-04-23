@@ -150,15 +150,32 @@ class Git:
 
         self._run_cmd(cmd)
 
-    def is_dirty(self) -> bool:
-        p = self._run_cmd(["git", "status", "--short"], capture_output=True)
+    def status(self, files: list[Path] | None = None):
+        cmd = ["git", "status", "--short", "--"]
+        if files:
+            for file in files:
+                cmd.append(str(file))
 
-        if p.stdout:
+        p = self._run_cmd(cmd, capture_output=True)
+        out = p.stdout
+        if isinstance(out, bytes):
+            out = out.decode("utf8")
+
+        return out.strip()
+
+    def is_dirty(self) -> bool:
+        out = self.status()
+        match = re.search(r"^ \w", out, re.MULTILINE)
+
+        if match:
             return True
 
         return False
 
     def commit(self, msg: str):
+        if self.is_dirty():
+            raise RuntimeError("git is dirty (there are unstaged files)")
+
         self._run_cmd(["git", "commit", "-m", msg])
 
 
@@ -184,6 +201,13 @@ def get_log_til_last_release(git: Git):
 
 class Project:
     def __init__(self, git: Git, config: ProjectConfig) -> None:
+        config_file = config.files[-1]
+        if git.status([config_file.path]):
+            raise RuntimeError(
+                f"the config file {config_file.path} is already staged"
+                ", restore it before running"
+            )
+
         self.name = config.name
         self.git = git
         self.files = [FileVersion(f.path, f.pattern) for f in config.files]
