@@ -80,7 +80,7 @@ ENV PATH="$PYSETUP_PATH/.venv/bin:$PATH"
 WORKDIR /app
 
 COPY --from=build $PYSETUP_PATH $PYSETUP_PATH
-COPY ./manver ./manver
+COPY ./src/manver ./manver
 COPY pyproject.toml README.md ./
 COPY ./docker/entrypoint.sh ./
 
