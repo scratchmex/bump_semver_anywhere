@@ -7,10 +7,11 @@ import pytest
 
 
 @pytest.fixture
-def mock_project_files(tmp_path):
+def mock_project_files(tmp_path: Path, request):
     from shutil import copy, copytree
 
-    test_files = Path("tests/files")
+    invocation_dir: Path = request.config.invocation_dir
+    test_files = invocation_dir / "tests/files"
 
     copytree(test_files / "src", tmp_path / "src")
     copy(test_files / ".manver.test.toml", tmp_path)
@@ -54,3 +55,5 @@ def mock_project_files(tmp_path):
     # last_hash = p.stdout.decode()
 
     os.chdir(tmp_path)
+    yield
+    os.chdir(invocation_dir)

@@ -126,36 +126,12 @@ class Git:
 
         return p
 
-    def last_commit_hash_updated_files(self, files: list[Path]) -> str:
-        cmd = ["git", "log", "--oneline", "--"]
-
-        for file in files:
-            cmd.append(str(file))
-
-        p = self._run_cmd(cmd, capture_output=True)
-
-        out = p.stdout
-        if isinstance(out, bytes):
-            out = out.decode("utf8").strip()
-
-        if not out:
-            raise RuntimeError("no git history")
-
-        # FIXME: avoid hardcoding this
-        match = re.search(r"^release", out, re.MULTILINE)
-        if not match:
-            last_hash = out.strip().split("\n")[-1]
-        else:
-            last_hash = match.group()
-        last_hash = last_hash[:7]
-
-        return last_hash
-
     def log(self, start_hash: str | None = None):
 
         cmd = ["git", "log", "--oneline"]
         if start_hash:
             cmd.append(f"{start_hash}..@")
+        cmd.append("--")
         p = self._run_cmd(cmd, capture_output=True)
         out = p.stdout
         if isinstance(out, bytes):
@@ -184,6 +160,26 @@ class Git:
 
     def commit(self, msg: str):
         self._run_cmd(["git", "commit", "-m", msg])
+
+
+def get_log_til_last_release(git: Git):
+    # TODO: support for buffer so we don't save the whole git history in a string
+    log = git.log()
+
+    # FIXME: avoid hardcoding this
+    match = re.search(r"^\w{7} release", log, re.MULTILINE)
+
+    if not match:
+        glog = log
+    else:
+        last_hash = match.group()[:7]
+        glog = git.log(f"{last_hash}~1")  # end inclusive
+
+    hashes, msgs = zip(*[(s[:7], s[8:]) for s in glog.splitlines()])
+    hashes = "\n".join(hashes)
+    msgs = "\n".join(msgs)
+
+    return hashes, msgs
 
 
 class Project:
@@ -282,9 +278,8 @@ def get_next_version(project: Project, part: VersionIdentifier) -> ProjectVersio
     if part != VersionIdentifier.AUTO:
         return project.version.next(part)
 
-    last_hash = project.git.last_commit_hash_updated_files(
-        [f.path for f in project.files]
-    )
+    hashes, msgs = get_log_til_last_release(project.git)
+    last_hash = hashes.splitlines()[-1]
     git_log = project.git.log(start_hash=last_hash)
     part = VersionBumpStrategy(git_log).apply(project.bump_strategy)
 
