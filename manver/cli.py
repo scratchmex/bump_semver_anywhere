@@ -36,7 +36,9 @@ def main():
     "--id",
     "-i",
     required=False,
-    type=click.Choice(VersionIdentifier._value2member_map_),
+    type=click.Choice(
+        VersionIdentifier._value2member_map_,  # type: ignore[arg-type]
+    ),
     show_default=True,
     default=VersionIdentifier.AUTO.value,
     help="the version identifier to bump",
@@ -68,7 +70,11 @@ def bump(config: Path, id: str, yes: bool):
     click.secho("...", nl=False)
 
     next_vers = [
-        get_next_version(p, VersionIdentifier._value2member_map_[id]) for p in projects
+        get_next_version(
+            p,
+            VersionIdentifier._value2member_map_[id],  # type: ignore[arg-type]
+        )
+        for p in projects
     ]
 
     click.secho("done", fg=GREEN)

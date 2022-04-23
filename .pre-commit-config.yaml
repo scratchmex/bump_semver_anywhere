@@ -21,3 +21,11 @@ repos:
       entry: poetry run flake8
       require_serial: true
       types: [python]
+
+    - name: mypy
+      id: mypy
+      language: system
+      entry: poetry run mypy
+      args: ["--ignore-missing-imports", "--scripts-are-modules"]
+      require_serial: true
+      types_or: [python, pyi]

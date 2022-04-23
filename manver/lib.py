@@ -39,7 +39,7 @@ class Config(BaseModel):
 
 
 class FileVersion:
-    def __init__(self, path: str, pattern: str) -> None:
+    def __init__(self, path: str | Path, pattern: str) -> None:
         self.path = Path(path)
         self.pattern = re.compile(pattern)
 
@@ -60,7 +60,7 @@ class FileVersion:
         self.path.write_text(content, "utf8")
 
     def update(self, version: str):
-        start, end = self._match.span(1)
+        start, end = self._match.span(1)  # type: ignore[union-attr]
         content = self._content[:start] + version + self._content[end:]
 
         self._save_file(content)
@@ -94,8 +94,6 @@ class ProjectVersion:
 
     def next(self, identifier: VersionIdentifier) -> "ProjectVersion":
         _version = self._version
-
-        print(f"{identifier=}")
 
         if identifier == VersionIdentifier.MAJOR:
             version = _version.next_major()
